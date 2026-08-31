@@ -1,0 +1,15 @@
+{
+  "name": "izure-public",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Izuré public layer — marketing/portfolio site.",
+  "scripts": {
+    "dev": "vite --host",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^7.1.7"
+  }
+}
