@@ -1,15 +1,18 @@
 {
-  "name": "izure-public",
+  "name": "izure",
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Izuré public layer — marketing/portfolio site.",
+  "description": "Izuré — public layer (portfolio) and private layer (dashboard), served by a Cloudflare Worker.",
   "scripts": {
     "dev": "vite --host",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "cf:dev": "vite build && wrangler dev --var DEV_BYPASS:1",
+    "cf:deploy": "vite build && wrangler deploy"
   },
   "devDependencies": {
-    "vite": "^7.1.7"
+    "vite": "^7.1.7",
+    "wrangler": "^4.111.0"
   }
 }

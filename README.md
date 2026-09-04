@@ -1,72 +1,102 @@
 # Izuré
 
-The new design for Izuré, replacing what was previously shipped from
-`lernplattform_kommunikation`. Two layers, one Vite project:
+Zwei Layer, ein Cloudflare Worker. Ersetzt die Vorgängerversion
+(`lernplattform_kommunikation`).
 
-- **Public layer** (`/`) — the marketing/portfolio site, open to anyone.
-- **Private layer** (`/private/`) — the dashboard behind the access gate:
-  learning corner (flashcards/quiz/exam), widgets (calendar, weather, news,
-  Pomodoro), and settings. Reachable by unlocking the gate on the public
-  layer, or directly at `/private/` during development.
+- **Public Layer** (`/`) — Portfolio- und Marketingseite, offen für alle.
+- **Private Layer** (`/private/`) — Dashboard mit Lernecke (Flashcards,
+  Quiz, Klausur), Widgets (Kalender, Wetter, Nachrichten, Pomodoro) und
+  Einstellungen. Erreichbar nur nach Anmeldung.
+
+Deploy, Secrets und Authenticator-Einrichtung: **[DEPLOY.md](DEPLOY.md)**
+
+## Zugang
+
+Der private Layer ist **serverseitig** geschützt, nicht im Browser:
+
+- Anmeldung per **TOTP** (Google-Authenticator-Stil, RFC 6238) — 6-stelliger
+  Code, rotiert alle 30 Sekunden, geprüft gegen ein Secret, das nur als
+  verschlüsseltes Worker-Secret existiert und nie im Repo steht.
+- Bei Erfolg setzt der Worker ein HMAC-signiertes, `HttpOnly`-Cookie (12 h).
+  JavaScript im Browser kommt an dieses Cookie nicht heran.
+- **Alles** unter `/private/` — HTML, CSS, Skripte, sämtliche Lerninhalte —
+  wird ohne gültiges Cookie gar nicht erst ausgeliefert. Auch die
+  gebündelten Dateien liegen deshalb unter `/private/assets/` und nicht im
+  öffentlichen `/assets/`.
+- `/api/weather` und `/api/news` verlangen dieselbe Sitzung.
+
+Dazu kommen CSP mit Nonce, HSTS, `X-Frame-Options`, `noindex` auf dem
+privaten Layer und ein optionaler Turnstile-Bot-Check.
 
 ## Stack
 
-Static HTML/CSS/JS served through Vite as a two-entry multi-page app (no
-framework runtime needed for either layer yet — both are hand-built,
-absolutely-positioned layouts). `vite.config.js` builds both `index.html`
-and `private/index.html` as separate entries.
+Statisches HTML/CSS/JS, gebaut mit Vite als mehrseitige Anwendung,
+ausgeliefert von einem Cloudflare Worker. Kein Framework-Runtime — beide
+Layer sind handgebaute, absolut positionierte Layouts.
 
 ```
-index.html              public layer entry point
-src/style.css            public layer: fonts, desktop layout (#page, scaled 1920px design),
-                          motion/animation styles, mobile layout (<1180px), gate styles
-src/motion.js             scroll reveals, hero typewriter, award hovers, FAQ accordion,
-                          testimonial switcher, nav toggle
-src/gate.js               "Private Layer" access-code gate (see caveat below)
+index.html                 Public Layer
+privacy.html               Datenschutzerklärung (DSGVO)
+terms.html                 Nutzungsbedingungen
+imprint.html               Impressum — Anschrift vor Livegang ausfüllen
+404.html                   Fehlerseite
 
-private/index.html        private layer entry point
-private/src/lernecke-data.js  Lernfeld content: topics, flashcards, quiz/exam pools
-private/src/widgets.js        calendar, day/year progress, weather, news widgets
-private/src/shell.js          shell, dashboard wiring, settings (theme, accent, density…)
-private/src/lernfeld.js       flashcards/quiz/exam interaction logic
-src/private-style.css     private layer: shell, dashboard, widgets, settings, Lernfeld styles
+src/style.css              Public Layer: Desktop (skaliertes 1920er Layout)
+                            + eigenes Mobil-Layout unter 1180 px
+src/page.css               Textseiten (Recht, 404)
+src/motion.js              Scroll-Reveals, Typewriter, FAQ, Testimonials, Navigation
+src/gate.js                Login-Dialog → /auth/verify
+src/consent.js             Cookie-Hinweis, Analytics-Einbindung, Turnstile
+src/contact.js             Kontaktformular: Prüfung + Versand
 
-public/images/            photos & icons (both layers share this folder)
-public/fonts/             Domine + Space Grotesk subsets (self-hosted, woff/woff2)
+private/index.html         Private Layer
+private/src/lernecke-data.js  Lernfelder 1–5: Themen, Flashcards, Quiz
+private/src/lernfeld.js       Flashcards, Quiz, Klausur
+private/src/shell.js          Router, Dashboard, Einstellungen
+private/src/widgets.js        Kalender, Tag/Jahr, Wetter, Nachrichten
+private/src/profile.js        Name + Lernfortschritt (lokal)
+private/src/ambiance.js       dauerhafter Ambiance-Player
+src/private-style.css      Private Layer, drei Oberflächen (hell/warm/dunkel)
+
+worker/index.ts            Zugang, Sicherheits-Header, API-Proxys
+wrangler.jsonc             Cloudflare-Konfiguration
+public/                    Bilder, Schriften, robots.txt, sitemap.xml
 ```
 
-## Develop
+## Inhalte der Lernecke
+
+Aus der Vorgängerversion übernommen: **5 Lernfelder, 108 Themen,
+528 Flashcards, 299 Quizfragen** (Kaufleute für Dialogmarketing).
+
+Offene und Zuordnungsfragen der Altversion haben keine Antwortoptionen und
+lassen sich im Quiz nicht darstellen — sie sind als zusätzliche Flashcards
+übernommen, damit kein Inhalt verloren geht.
+
+Der Fortschritt ergibt sich aus der tatsächlichen Nutzung (gewusste Karten,
+richtige Antworten) und liegt im `localStorage` — er verlässt das Gerät
+nicht. Ebenso der angezeigte Name und die Oberflächen­einstellungen.
+
+## Entwickeln
 
 ```bash
 npm install
-npm run dev
+npm run dev        # nur statische Seiten
+npm run cf:dev     # mit Worker (Login/APIs), DEV_BYPASS aktiv
+npm run build
 ```
 
-## Build
+## Bekannte Grenzen
 
-```bash
-npm run build   # outputs to dist/ (dist/index.html + dist/private/index.html)
-npm run preview
-```
-
-## Known placeholders
-
-- **The gate is not real authentication.** `src/gate.js` checks a 6-digit
-  code against a **hardcoded client-side value** (`428173`) and, once
-  unlocked, redirects to `/private/`. Anyone can read the code out of the
-  shipped JS or just navigate to `/private/` directly — there's no server
-  enforcing access. Replace this with a real auth flow (server-verified
-  session/token) before anything sensitive lives behind it.
-- **Marco (the "K.I" widget) is UI-only.** The dashboard card is wired up
-  visually but has no backing assistant yet — the input is disabled and the
-  card says so ("Wird später gebaut").
-- **Weather, news, and some dashboard numbers are static/mocked data**,
-  not live feeds — useful for shaping the UI, not yet functional.
-
-## Origin
-
-Both layers were delivered as offline-exported HTML bundles (fonts/images
-inline as base64, markup as a self-unpacking template script). The assets
-and markup here were extracted from those bundles and rewritten to
-reference real files instead of runtime-generated blob URLs, so the site
-builds and serves normally.
+- **Marco (K.I.)** ist eine gestaltete Platzhalterkarte ohne Funktion — das
+  Eingabefeld ist deaktiviert und die Karte sagt das auch.
+- **Kundenlogos**: gezeigt werden Wortmarken. Fremde Logos gehören ihren
+  Inhabern und werden hier nicht nachgebaut; wer sie zeigen darf, legt sie
+  unter `public/images/brands/<slug>.svg` ab und trägt den Slug in
+  `BRAND_LOGOS` ein (siehe `index.html`).
+- **Kontaktformular** öffnet das Mailprogramm mit vorbereiteter Nachricht.
+  Es gibt keinen Server, der Anfragen speichert — bewusst, das erspart eine
+  Auftragsverarbeitung. Für echten Serverversand genügt es, `send()` in
+  `src/contact.js` zu ersetzen.
+- **Wetter und Nachrichten** kommen live über den Worker (Open-Meteo,
+  tagesschau-RSS). Schlägt der Abruf fehl, sagt die Karte das, statt alte
+  oder erfundene Werte zu zeigen.

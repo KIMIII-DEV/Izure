@@ -1,0 +1,24 @@
+// IZURÉ auf Cloudflare Workers (Static Assets + TOTP-Login + API-Proxys).
+// Deploy: npm run cf:deploy   ·   Lokal: npm run cf:dev
+// Secrets setzen + Authenticator-App einrichten: siehe DEPLOY.md
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "izure",
+  "compatibility_date": "2026-07-16",
+  "main": "worker/index.ts",
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "not_found_handling": "404-page",
+    // Der Worker läuft VOR jeder Auslieferung — nicht nur für /auth/*,
+    // /api/* und das Zero-Trust-Gate auf /private/*, sondern auch für die
+    // öffentlichen Seiten. Andernfalls gingen statische Dateien am Worker
+    // vorbei und bekämen weder Sicherheits-Header noch die CSP.
+    "run_worker_first": true
+  },
+  "routes": [
+    { "pattern": "izu-re.com", "custom_domain": true },
+    { "pattern": "www.izu-re.com", "custom_domain": true }
+  ],
+  "observability": { "enabled": true }
+}

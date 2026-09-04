@@ -19,7 +19,7 @@ tick();setInterval(function(){tick();WID.day()},15000);
 WID.all();
 
 /* ── Typing-Zeile ── */
-var LINES=['Privat Layer · Übersicht über alle Räume.','Lernecke · 4 Felder, Karten, Quiz und Klausur.','Fokus-Modus · Pomodoro läuft mit.'],
+var LINES=['Privat Layer · Übersicht über alle Räume.','Lernecke · '+LF.length+' Felder, Karten, Quiz und Klausur.','Fokus-Modus · Pomodoro läuft mit.'],
     ti=0,ci=0,del=false,typed=$('#typed');
 function type(){
   if(!typed)return;
@@ -38,6 +38,7 @@ function go(view){
   if(view==='dash')paintDash();
   if(view==='lern')paintLern();
   window.scrollTo(0,0);
+  dispatchEvent(new CustomEvent('izure:view',{detail:view}));
 }
 window.goView=go;
 document.addEventListener('click',function(e){
@@ -57,20 +58,40 @@ function focusCell(id){
 }
 
 /* ── Dashboard · Lernecke-Karte ── */
-var overall=Math.round(LF.reduce(function(a,l){return a+l.pct},0)/(LF.length||1)),
-    totCards=LF.reduce(function(a,l){return a+l.cards.length},0),
-    totQuiz=LF.reduce(function(a,l){return a+l.quiz.length},0);
+var lernPainted=false;
+/* Die Spanne der noch fehlenden Lernfelder ergibt sich aus dem letzten
+   vorhandenen — sonst steht dort weiter „05—10“, obwohl Lernfeld 5 da ist. */
+function nextRange(){
+  var last=LF.length?parseInt(LF[LF.length-1].code,10):0;
+  return last>=10?'':(last+1<10?'0':'')+(last+1)+'—10';
+}
+var totCards=LF.reduce(function(a,l){return a+l.cards.length},0),
+    totQuiz=LF.reduce(function(a,l){return a+l.quiz.length},0),
+    overall=0;
 
-$('#lfrows').innerHTML=LF.map(function(l,i){
-  return '<button class="lfr'+(l.pct===100?' done':'')+'" data-lf="'+i+'">'+
-    '<span class="cd">'+l.code+'</span>'+
-    '<span class="nm">'+l.name+'<small>'+l.cards.length+' Karten · '+l.quiz.length+' Fragen · '+l.state+'</small></span>'+
-    '<span class="pr"><span class="t"><i data-w="'+l.pct+'"></i></span><em>'+l.pct+'</em></span>'+
-    '<svg class="go" width="17" height="17" viewBox="0 0 24 24"><use href="#i-arr"/></svg></button>';
-}).join('')+
-'<button class="lfr soon" disabled><span class="cd">05—10</span><span class="nm">Weitere Lernfelder<small>folgen später</small></span><span class="pr"><span class="t"></span><em>—</em></span><svg class="go" width="17" height="17" viewBox="0 0 24 24"><use href="#i-arr"/></svg></button>';
-$('#lfmeta').textContent=LF.length+' Felder aktiv';
-$('#lfsub').textContent=totCards+' Karten · '+totQuiz+' Quizfragen';
+function rows(){
+  overall=Math.round(LF.reduce(function(a,l){return a+l.pct},0)/(LF.length||1));
+  $('#lfrows').innerHTML=LF.map(function(l,i){
+    return '<button class="lfr'+(l.pct===100?' done':'')+'" data-lf="'+i+'">'+
+      '<span class="cd">'+l.code+'</span>'+
+      '<span class="nm">'+l.name+'<small>'+l.cards.length+' Karten · '+l.quiz.length+' Fragen · '+l.state+'</small></span>'+
+      '<span class="pr"><span class="t"><i data-w="'+l.pct+'" style="width:'+l.pct+'%"></i></span><em>'+l.pct+'</em></span>'+
+      '<svg class="go" width="17" height="17" viewBox="0 0 24 24"><use href="#i-arr"/></svg></button>';
+  }).join('');
+  $('#lfmeta').textContent=LF.length+' Felder aktiv';
+  $('#lfsub').textContent=totCards+' Karten · '+totQuiz+' Quizfragen';
+  $('#lfbar').style.width=overall+'%';
+  $('#lfpct').textContent=overall+' %';
+}
+rows();
+
+// Nach jedem Durchlauf (Karten, Quiz, Klausur) neu zeichnen — Dashboard und
+// Lernecke-Übersicht zeigen sonst den Stand von vor dem Lernen.
+addEventListener('izure:progress',function(){
+  rows();
+  lernPainted=false;
+  if($('#v-lern').classList.contains('on'))paintLern();
+});
 
 function countTo(el,to,ms,suf){
   var t0=null;
@@ -88,7 +109,6 @@ function paintDash(){
   setTimeout(function(){
     $('#lfbar').style.width=overall+'%';
     countTo($('#lfpct'),overall,1100,' %');
-    $$('#lfrows .pr .t i').forEach(function(i){i.style.width=(i.dataset.w||0)+'%'});
   },260);
 }
 paintDash();
@@ -98,7 +118,9 @@ $('#lfrows').addEventListener('click',function(e){
   window.openLF(+r.dataset.lf);
 });
 $('#resume').addEventListener('click',function(){
-  var i=0;for(var k=0;k<LF.length;k++){if(LF[k].pct<100){i=k;break}}
+  // Erstes noch nicht fertiges Feld; ist alles fertig, das letzte.
+  var i=LF.length-1;
+  for(var k=0;k<LF.length;k++){if(LF[k].pct<100){i=k;break}}
   window.openLF(i);
 });
 
@@ -121,13 +143,12 @@ $('#pomgo2').addEventListener('click',ptoggle);
 $('#pom25').addEventListener('click',function(){pstop();mins=mins===25?5:25;left=mins*60;ppaint();this.textContent=mins+' / '+(mins===25?5:25)});
 ppaint();
 
-$('#ytgo').addEventListener('click',function(){
-  $('#yt').innerHTML='<iframe src="https://www.youtube.com/embed/kR-9AIXWIG4?autoplay=1&rel=0" title="Ambiance" allow="autoplay; encrypted-media" allowfullscreen></iframe>';
-});
+/* Ambiance läuft in ambiance.js — dauerhafter Player, überlebt Ansichtswechsel. */
 
 /* ── Lernecke-Übersicht ── */
-var lernPainted=false;
 function paintLern(){
+  var sub=$('#lernsub');
+  if(sub)sub.textContent=LF.length+' Lernfelder · Themen, Flashcards, Quiz und Klausur je Feld.';
   if(lernPainted)return;lernPainted=true;
   var C=2*Math.PI*19;
   $('#lgrid').innerHTML=LF.map(function(l,i){
@@ -140,7 +161,7 @@ function paintLern(){
       '<span class="tagrow"><i>Flashcards</i><i>Quiz</i><i>Klausur</i></span>'+
       '<span class="kpi"><div><b>'+l.themen.length+'</b>Themen</div><div><b>'+l.cards.length+'</b>Karten</div><div><b>'+l.quiz.length+'</b>Fragen</div></span></button>';
   }).join('')+
-  '<div class="lcard soon" style="--i:'+LF.length+'"><span class="cd">Lernfeld 05—10</span><h3>Noch nicht vorhanden</h3><span class="st">wird später ergänzt</span><span class="kpi"><div><b>—</b>Themen</div><div><b>—</b>Karten</div><div><b>—</b>Fragen</div></span></div>';
+  '<div class="lcard soon" style="--i:'+LF.length+'"><span class="cd">Lernfeld '+nextRange()+'</span><h3>Noch nicht vorhanden</h3><span class="st">wird später ergänzt</span><span class="kpi"><div><b>—</b>Themen</div><div><b>—</b>Karten</div><div><b>—</b>Fragen</div></span></div>';
   setTimeout(function(){$$('#lgrid .fgc').forEach(function(c){c.setAttribute('stroke-dashoffset',c.dataset.off)})},420);
 }
 $('#lgrid').addEventListener('click',function(e){
@@ -156,7 +177,15 @@ function hex2rgb(h){h=h.replace('#','');return [parseInt(h.slice(0,2),16),parseI
 function mix(h,w){var c=hex2rgb(h);return 'rgb('+c.map(function(v){return Math.round(v+(255-v)*w)}).join(',')+')'}
 function apply(){
   var r=document.documentElement.style;
-  r.setProperty('--blue',cfg.accent);
+  // Auf dunklem Grund ist der gesättigte Akzent als Textfarbe nicht mehr
+  // lesbar (Blau #1E4B9A auf #1C1C20 sind 2,0:1 statt der geforderten
+  // 4,5:1). Deshalb wird er dort aufgehellt — der gewählte Farbton bleibt
+  // erhalten, nur die Helligkeit zieht nach. 35 % reichen für jeden der
+  // angebotenen Akzente sicher über die Schwelle.
+  r.setProperty('--blue',cfg.surface==='dark'?mix(cfg.accent,.45):cfg.accent);
+  // Der ungemischte Akzent bleibt für Flächen mit weißer Schrift: dort
+  // wäre die aufgehellte Variante zu hell, um den Text zu tragen.
+  r.setProperty('--accent-solid',cfg.accent);
   r.setProperty('--red',cfg.signal);
   r.setProperty('--pink',mix(cfg.signal,.9));
   r.setProperty('--r',cfg.radius+'px');
@@ -182,6 +211,21 @@ $('#setgo').addEventListener('click',function(){openSet(true)});
 $('#setclose').addEventListener('click',function(){openSet(false)});
 $('#scrim').addEventListener('click',function(){openSet(false)});
 $('#setreset').addEventListener('click',function(){cfg=Object.assign({},DEF);apply()});
+
+var nameField=$('#setname');
+if(nameField){
+  nameField.value=(window.PROFILE&&window.PROFILE.name)||'';
+  // Bei jeder Eingabe speichern: ein „Speichern“-Knopf, den man vergessen
+  // kann, wäre hier nur eine zusätzliche Fehlerquelle.
+  nameField.addEventListener('input',function(){if(window.PROFILE)window.PROFILE.set(nameField.value)});
+}
+
+$('#progreset').addEventListener('click',function(){
+  // Gelöschter Lernfortschritt lässt sich nicht wiederherstellen — deshalb
+  // eine echte Rückfrage, anders als beim Zurücksetzen der Darstellung.
+  if(!confirm('Lernfortschritt aller Lernfelder löschen? Das lässt sich nicht rückgängig machen.'))return;
+  if(window.PROGRESS)window.PROGRESS.reset();
+});
 document.addEventListener('keydown',function(e){if(e.key==='Escape')openSet(false)});
 apply();
 })();

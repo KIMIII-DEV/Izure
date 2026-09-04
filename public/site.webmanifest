@@ -1,0 +1,12 @@
+{
+  "name": "Maurice Risch — Brand & Communication Design",
+  "short_name": "Maurice Risch",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#FAFAFA",
+  "theme_color": "#1E4B9A",
+  "icons": [
+    { "src": "/favicon.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}

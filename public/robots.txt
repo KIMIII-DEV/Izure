@@ -1,0 +1,10 @@
+# izu-re.com
+User-agent: *
+Allow: /
+# Der private Layer ist serverseitig gesperrt (Login) und gehört nicht in den Index.
+Disallow: /private
+Disallow: /private/
+Disallow: /auth/
+Disallow: /api/
+
+Sitemap: https://izu-re.com/sitemap.xml

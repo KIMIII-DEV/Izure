@@ -98,7 +98,7 @@
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
-:root{--blue:#1E4B9A;--red:#CD392A;--gray:#71717B;--gray2:#9F9FA9;--f4:#F4F4F5;--e4:#E4E4E7;--fa:#FAFAFA;--pink:#FDECE9;--ink:#27272A;--sg:"Space Grotesk",-apple-system,sans-serif;--dom:Domine,Georgia,serif}
+:root{--blue:#1E4B9A;--red:#CD392A;--gray:#71717B;--gray2:#74747E;--f4:#F4F4F5;--e4:#E4E4E7;--fa:#FAFAFA;--pink:#FDECE9;--ink:#27272A;--sg:"Space Grotesk",-apple-system,sans-serif;--dom:Domine,Georgia,serif}
 *{margin:0;padding:0;box-sizing:border-box}
 html{overflow-x:hidden;text-size-adjust:100%;-webkit-text-size-adjust:100%}
 body{background:var(--fa);font-family:var(--sg);color:var(--blue);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
@@ -210,7 +210,7 @@ img{display:block}
 .faq.open .pm b{opacity:0}
 .faq .a{margin:8px 6px 0;position:relative;display:none}
 .faq.open .a{display:block}
-.abub{position:relative;margin-left:76.2px;width:431.8px;border-radius:16px;background:var(--blue);color:#fff;padding:8px 16px;font:400 16px/25.6px var(--sg)}
+.abub{position:relative;margin-left:76.2px;width:431.8px;border-radius:16px;background:var(--accent-solid,var(--blue));color:#fff;padding:8px 16px;font:400 16px/25.6px var(--sg)}
 .abub .ear{position:absolute;right:-6px;top:calc(100% - 24px);width:17.005px;height:24.643px;overflow:visible}
 /* contact */
 .field{position:relative}
@@ -229,11 +229,15 @@ img{display:block}
 /* ── Privat Layer · Shell, Dashboard, Widgets, Einstellungen ── */
 :root{--rail:68px;--gut:14px;--r:14px;--sh:0 1px 2px rgba(39,39,42,.05);--sh2:0 18px 40px -28px rgba(22,43,85,.28);--eo:cubic-bezier(.32,.72,0,1)}
 body{--tx:#16233D;--card:#fff;--hair:var(--e4);--bg1:#fff;--bg2:var(--fa)}
-body[data-surface="warm"]{--tx:#2A2520;--card:#FFFDF9;--fa:#F7F3EC;--f4:#F1ECE3;--e4:#E7E0D4;--gray:#7A7268;--gray2:#ABA294;--bg1:#FFFCF6;--bg2:#F7F3EC}
-body[data-surface="dark"]{--tx:#ECECEF;--card:#1C1C20;--fa:#151517;--f4:#26262B;--e4:#313138;--gray:#A1A1AA;--gray2:#75757E;--ink:#0F0F11;--bg1:#151517;--bg2:#121214}
+body[data-surface="warm"]{--tx:#2A2520;--card:#FFFDF9;--fa:#F7F3EC;--f4:#F1ECE3;--e4:#E7E0D4;--gray:#7A7268;--gray2:#7C7466;--bg1:#FFFCF6;--bg2:#F7F3EC}
+body[data-surface="dark"]{--tx:#ECECEF;--card:#1C1C20;--fa:#151517;--f4:#26262B;--e4:#313138;--gray:#A1A1AA;--gray2:#8A8A93;--ink:#0F0F11;--bg1:#151517;--bg2:#121214}
 html,body{height:100%;overflow:hidden}
 body{background:linear-gradient(180deg,var(--bg1) 0%,var(--bg2) 260px,var(--bg2) 100%);color:var(--tx)}
-button{font-family:var(--sg)}
+/* Buttons erben Textfarbe nicht von selbst — ohne diese Zeile fallen sie
+   auf das Schwarz des Browsers zurück. Auf hellen Karten fällt das nicht
+   auf, auf der dunklen Oberfläche wird der Text dadurch unlesbar (die
+   Lernfeld-Kacheln sind Buttons). */
+button{font-family:var(--sg);color:inherit}
 a{color:var(--blue)}a:hover{color:var(--red)}
 .mono{font:400 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--gray2)}
 .scry{overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--e4) transparent;min-height:0}
@@ -247,7 +251,7 @@ body[data-motion="off"] *{animation-duration:.01ms!important;transition-duration
 #rail .mk img{width:100%;height:100%;object-fit:cover}
 #rail .grp{display:flex;flex-direction:column;gap:6px;margin-top:26px}
 #rail .grp.low{margin-top:auto}
-.ric{position:relative;width:40px;height:40px;border:0;border-radius:11px;background:none;color:#9F9FA9;display:grid;place-items:center;cursor:pointer;transition:background .3s ease,color .3s ease}
+.ric{position:relative;width:40px;height:40px;border:0;border-radius:11px;background:none;color:var(--gray2);display:grid;place-items:center;cursor:pointer;transition:background .3s ease,color .3s ease}
 .ric:hover{color:#fff;background:rgba(255,255,255,.08)}
 .ric.on{color:#fff;background:rgba(255,255,255,.14)}
 .ric.on::before{content:"";position:absolute;left:-14px;top:11px;width:3px;height:18px;border-radius:0 3px 3px 0;background:var(--red);animation:markin .4s var(--eo)}
@@ -363,7 +367,7 @@ grid-template-areas:"lern wetter cal amb" "lern wetter day amb" "lern year news 
 .cal i{font-style:normal;font:400 12px/1 var(--sg);color:var(--tx);display:grid;place-items:center;aspect-ratio:1;border-radius:50%;font-variant-numeric:tabular-nums;transition:background .25s,color .25s}
 .cal i.past{color:var(--gray2)}
 .cal i.we{color:var(--gray)}
-.cal i.now{background:var(--blue);color:#fff;font-weight:700;animation:pop .5s var(--eo) .5s backwards}
+.cal i.now{background:var(--accent-solid,var(--blue));color:#fff;font-weight:700;animation:pop .5s var(--eo) .5s backwards}
 @keyframes pop{from{transform:scale(.4);opacity:0}}
 .cal i:not(.now):hover{background:var(--f4)}
 
@@ -413,7 +417,7 @@ grid-template-areas:"lern wetter cal amb" "lern wetter day amb" "lern year news 
 .nfilter{display:flex;gap:6px;margin-bottom:4px;flex:none;flex-wrap:wrap}
 .chip{border:1px solid var(--hair);background:none;border-radius:80px;height:26px;padding:0 11px;font:400 12px/1 var(--sg);color:var(--gray);cursor:pointer;transition:color .25s,border-color .25s,background .25s}
 .chip:hover{color:var(--blue);border-color:var(--blue)}
-.chip.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.chip.on{background:var(--accent-solid,var(--blue));border-color:var(--accent-solid,var(--blue));color:#fff}
 .nlist{flex:1;min-height:0;display:flex;flex-direction:column;justify-content:center}
 .nrow{display:flex;align-items:flex-start;gap:12px;padding:10px 4px;border-top:1px solid var(--hair);opacity:0;transform:translateY(6px);animation:rise .45s var(--eo) forwards;animation-delay:calc(var(--d)*70ms)}
 .nrow .nn{font:400 11px/1.5 ui-monospace,Menlo,monospace;color:var(--gray2);flex:none}
@@ -479,7 +483,7 @@ grid-template-areas:"lern wetter cal amb" "lern wetter day amb" "lern year news 
 .opts2{display:flex;gap:7px;margin-top:12px;flex-wrap:wrap}
 .opts2 button{flex:1;min-width:78px;height:36px;border:1px solid var(--hair);border-radius:9px;background:none;font:400 13px/1 var(--sg);color:var(--gray);cursor:pointer;transition:all .25s}
 .opts2 button:hover{border-color:var(--blue);color:var(--blue)}
-.opts2 button.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.opts2 button.on{background:var(--accent-solid,var(--blue));border-color:var(--accent-solid,var(--blue));color:#fff}
 .sheet footer{display:flex;align-items:center;gap:12px;padding:14px 22px;border-top:1px solid var(--hair);flex:none}
 .sheet footer .mono{margin-left:auto}
 
@@ -567,7 +571,7 @@ grid-template-areas:"lern wetter amb" "lern wetter amb" "lern cal news" "motiv d
 .mode:hover{border-color:var(--blue);color:var(--blue);transform:translateY(-2px)}
 .mode span{font:400 13.5px/1.2 var(--sg);color:var(--tx)}
 .mode small{display:block;margin-top:4px;font:400 11px/1.3 var(--sg);color:var(--gray)}
-.mode.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.mode.on{background:var(--accent-solid,var(--blue));border-color:var(--accent-solid,var(--blue));color:#fff}
 .mode.on span,.mode.on small{color:#fff}
 .mode.on small{opacity:.72}
 
@@ -589,7 +593,7 @@ grid-template-areas:"lern wetter amb" "lern wetter amb" "lern cal news" "motiv d
 .fcf,.fcb{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:14px;padding:22px 24px;display:flex;flex-direction:column;justify-content:center;gap:12px;overflow:hidden}
 .fcf{background:var(--fa);box-shadow:inset 0 0 0 1px var(--hair)}
 .fcf::after{content:"";position:absolute;right:-30px;bottom:-30px;width:130px;height:130px;border-radius:50%;background:var(--blue);opacity:.05}
-.fcb{background:var(--blue);color:#fff;transform:rotateY(180deg)}
+.fcb{background:var(--accent-solid,var(--blue));color:#fff;transform:rotateY(180deg)}
 .fcb::after{content:"";position:absolute;left:-24px;top:-24px;width:110px;height:110px;border-radius:50%;background:#fff;opacity:.07}
 .fcf p{font:700 clamp(17px,1.5vw,21px)/1.4 var(--dom);letter-spacing:-.2px;text-wrap:pretty;position:relative}
 .fcb p{font:400 clamp(14px,1.2vw,16.5px)/1.6 var(--sg);position:relative}
@@ -621,9 +625,9 @@ grid-template-areas:"lern wetter amb" "lern wetter amb" "lern cal news" "motiv d
 .opt{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--hair);border-radius:11px;background:var(--card);text-align:left;font:400 15px/1.35 var(--sg);color:var(--tx);cursor:pointer;position:relative;overflow:hidden;transition:border-color .25s,background .25s,transform .28s var(--eo);animation:fadeup .45s var(--eo) both;animation-delay:calc(var(--d)*70ms + 90ms)}
 .opt:hover{border-color:var(--blue);transform:translateX(4px)}
 .opt .k{width:24px;height:24px;border-radius:50%;background:var(--f4);display:grid;place-items:center;font:400 12px/1 ui-monospace,Menlo,monospace;color:var(--gray);flex:none;transition:background .25s,color .25s}
-.opt:hover .k{background:var(--blue);color:#fff}
+.opt:hover .k{background:var(--accent-solid,var(--blue));color:#fff}
 .opt.pick{border-color:var(--blue);background:color-mix(in srgb,var(--blue) 7%,transparent)}
-.opt.pick .k{background:var(--blue);color:#fff}
+.opt.pick .k{background:var(--accent-solid,var(--blue));color:#fff}
 .opt.pick,.opt.right,.opt.wrong,.opt.lock{opacity:1}
 .opt.right{border-color:#199E3B;background:color-mix(in srgb,#199E3B 9%,transparent);animation:okpop .45s var(--eo)}
 .opt.right .k{background:#199E3B;color:#fff}
@@ -661,7 +665,7 @@ grid-template-areas:"lern wetter amb" "lern wetter amb" "lern cal news" "motiv d
 .exd{width:26px;height:26px;border:1px solid var(--hair);border-radius:8px;background:none;font:400 12px/1 var(--sg);color:var(--gray2);cursor:pointer;transition:all .25s}
 .exd:hover{border-color:var(--blue);color:var(--blue)}
 .exd.set{background:var(--f4);color:var(--tx)}
-.exd.now{background:var(--blue);border-color:var(--blue);color:#fff}
+.exd.now{background:var(--accent-solid,var(--blue));border-color:var(--accent-solid,var(--blue));color:#fff}
 .exres{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:16px;animation:qin .5s var(--eo)}
 .exsum{display:flex;align-items:center;gap:22px;flex:none}
 .exkpi{display:flex;gap:22px}
@@ -698,3 +702,73 @@ grid-template-areas:"lern wetter amb" "lern wetter amb" "lern cal news" "motiv d
 .dgrid{display:flex;flex-direction:column}
 .deck{min-height:210px}
 }
+
+/* ══ Ergänzungen: Name, Ambiance-Bedienung, Themen-Inhalt ══════════ */
+
+/* Nur für Screenreader — sichtbare Beschriftung wäre hier doppelt. */
+.sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
+  clip:rect(0 0 0 0);white-space:nowrap;border:0}
+
+/* ── Namensabfrage beim ersten Betreten ── */
+.namegate{position:fixed;inset:0;z-index:400;display:grid;place-items:center;
+  background:rgba(24,24,27,.44);backdrop-filter:blur(6px);
+  opacity:0;transition:opacity .32s ease}
+.namegate.in{opacity:1}
+.namecard{width:min(420px,calc(100vw - 32px));background:var(--bg,#fff);border-radius:var(--r,14px);
+  padding:30px 28px 24px;box-shadow:0 30px 70px -24px rgba(24,24,27,.5);
+  transform:translateY(12px) scale(.98);transition:transform .4s cubic-bezier(.32,.72,0,1)}
+.namegate.in .namecard{transform:none}
+.namecard h2{font:700 21px/1.3 var(--dom,Georgia,serif);color:var(--blue);margin-bottom:8px}
+.namecard p{font:400 14px/1.55 var(--sg);color:var(--muted,#71717b);margin-bottom:18px}
+.namecard form{display:flex;gap:10px}
+.namecard input{flex:1;min-width:0;height:42px;padding:0 13px;border:0;border-radius:calc(var(--r,14px) - 6px);
+  box-shadow:inset 0 0 0 1px var(--line,#e4e4e7);background:#fff;font:400 15px/1 var(--sg);color:var(--ink,#27272a)}
+.namecard input:focus{outline:0;box-shadow:inset 0 0 0 1.5px var(--blue)}
+.namecard .btn{flex:0 0 auto}
+.ng-skip{margin-top:14px;background:none;border:0;padding:0;cursor:pointer;
+  font:400 13px/1 var(--sg);color:var(--muted,#71717b);text-decoration:underline;text-underline-offset:3px}
+.ng-skip:hover{color:var(--red)}
+
+/* ── Namensfeld in den Einstellungen ── */
+.settext{width:100%;height:40px;padding:0 12px;margin-top:10px;border:0;border-radius:calc(var(--r,14px) - 6px);
+  box-shadow:inset 0 0 0 1px var(--line,#e4e4e7);background:#fff;font:400 15px/1 var(--sg);color:var(--ink,#27272a)}
+.settext:focus{outline:0;box-shadow:inset 0 0 0 1.5px var(--blue)}
+
+/* ── Ambiance: Bedienung im dauerhaften Player ──
+   Der Player liegt als eigener, fixierter Host über der Karte (siehe
+   ambiance.js) — die Knöpfe sitzen deshalb in ihm, nicht in der Karte. */
+#ambhost .ambctl{position:absolute;right:9px;top:9px;display:flex;gap:7px;z-index:2}
+#ambhost .ambctl button{width:30px;height:30px;border:0;border-radius:50%;cursor:pointer;
+  background:rgba(0,0,0,.42);color:#fafafa;display:grid;place-items:center;
+  backdrop-filter:blur(5px);transition:background .25s,transform .25s}
+#ambhost .ambctl button:hover{background:rgba(0,0,0,.62);transform:translateY(-1px)}
+#ambhost .ambctl button:focus-visible{outline:2px solid #fff;outline-offset:2px}
+
+/* ── Themen-Akkordeon mit vollem Inhalt ── */
+#thlist .a .lead{font-weight:500}
+#thlist .a p{margin-bottom:9px}
+#thlist .a ul{margin:0 0 10px;padding-left:17px}
+#thlist .a li{margin-bottom:4px}
+#thlist .a b{font-weight:700;color:var(--blue)}
+#thlist .a .keys{margin-top:12px;padding-top:11px;border-top:1px solid var(--line,#e4e4e7)}
+#thlist .a .keys .mono{display:block;margin-bottom:6px;font-size:11px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--muted,#71717b)}
+/* Signalrot auf dem rosa Feld liegt bei 4,3:1 — knapp unter AA. Der
+   gleiche abgedunkelte Ton wie beim „entsperrt“-Chip bringt 4,6:1. */
+#thlist .th button .rel{margin-left:8px;padding:2px 7px;border-radius:20px;font:500 10px/1.5 var(--sg);
+  letter-spacing:.05em;text-transform:uppercase;background:var(--pink,#fdece9);color:#c43628}
+
+/* Fehlermeldung statt erfundener Wetterwerte, wenn der Abruf scheitert. */
+.werr{grid-column:1/-1;font:400 13px/1.5 var(--sg);color:var(--muted,#71717b);padding:6px 0}
+
+/* Nachrichtenzeilen sind jetzt Links auf die Meldung. */
+a.nrow{text-decoration:none;color:inherit}
+a.nrow:hover .tp{color:var(--blue)}
+
+/* ── Kontrast (WCAG AA) ──────────────────────────────────────────
+   Drei Stellen lagen unter 4,5:1 und waren auf hellen Karten schwer zu
+   lesen. Die Farben werden nur so weit abgedunkelt, wie nötig — der
+   zurückgenommene Charakter bleibt. */
+
+/* Signalrot auf dem rosa Chip lag bei 4,3:1 → 4,6:1 */
+.live{color:#c43628}

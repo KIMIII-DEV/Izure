@@ -176,7 +176,7 @@
 <div class="hi">
 <button class="back" data-view="dash"><svg width="15" height="15" viewBox="0 0 24 24"><use href="#i-left"></use></svg>Dashboard</button>
 <h1>Lernecke</h1>
-<p class="sub">Vier Lernfelder · Themen, Flashcards, Quiz und Klausur je Feld.</p>
+<p class="sub" id="lernsub">Themen, Flashcards, Quiz und Klausur je Feld.</p>
 </div>
 <div id="clock2"><b id="ctime2">--:--</b><i id="cdate2">—</i></div>
 </header>
@@ -239,6 +239,11 @@
 </div>
 </section>
 <section class="sblk">
+<h3>Dein Name</h3><p>Steht in der Begrüßung. Bleibt auf diesem Gerät.</p>
+<label class="sr" for="setname">Dein Name</label>
+<input id="setname" class="settext" type="text" maxlength="60" autocomplete="given-name" placeholder="Vorname">
+</section>
+<section class="sblk">
 <h3>Oberfläche</h3><p>Grundton von Hintergrund und Karten.</p>
 <div class="opts2" data-set="surface">
 <button data-v="light">Hell</button>
@@ -269,12 +274,14 @@
 </div>
 </section>
 </div>
-<footer><button class="btn ghost sm" id="setreset">Zurücksetzen</button><span class="mono">Wird lokal gespeichert</span></footer>
+<footer><button class="btn ghost sm" id="setreset">Darstellung zurücksetzen</button><button class="btn ghost sm" id="progreset">Lernfortschritt löschen</button><span class="mono">Wird lokal gespeichert</span></footer>
 </aside>
 </div>
 
 <script type="module" src="/private/src/lernecke-data.js"></script>
+<script type="module" src="/private/src/profile.js"></script>
 <script type="module" src="/private/src/widgets.js"></script>
 <script type="module" src="/private/src/shell.js"></script>
 <script type="module" src="/private/src/lernfeld.js"></script>
+<script type="module" src="/private/src/ambiance.js"></script>
 </body></html>

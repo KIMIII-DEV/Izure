@@ -136,15 +136,10 @@ function nav(){
   });
 }
 
-/* ── contact form gating (both layouts) ───────────────────── */
-function forms(){
-  document.querySelectorAll('form').forEach(function(f){
-    var ins=f.querySelectorAll('input'),s=f.querySelector('.submit');
-    if(!s||ins.length<2)return;
-    function chk(){var ok=ins[0].value.trim()&&ins[1].value.trim();s.disabled=!ok;s.classList.toggle('on',!!ok)}
-    ins.forEach(function(i){i.addEventListener('input',chk)});
-  });
-}
+/* Formularlogik liegt vollständig in contact.js — Freischalten, Prüfen und
+   Absenden gehören zusammen; zwei Stellen, die dasselbe Feld beobachten,
+   waren nur eine Gelegenheit für Widersprüche. */
+function forms(){}
 
 /* ── init ─────────────────────────────────────────────────── */
 function init(){

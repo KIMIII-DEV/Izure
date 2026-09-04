@@ -14,7 +14,10 @@ window.openLF=function(i){
   $('#mQuiz').textContent=cur.quiz.length+' Fragen';
   $('#mExam').textContent=cur.quiz.length+' Aufgaben · '+cur.quiz.length*2+' min';
   $('#thlist').innerHTML=cur.themen.map(function(t,n){
-    return '<div class="th"><button type="button"><span class="n">'+(n<9?'0':'')+(n+1)+'</span>'+t.t+'<span class="pm"><i></i><b></b></span></button><div class="a"><p>'+t.d+'</p></div></div>';
+    return '<div class="th"><button type="button" aria-expanded="false"><span class="n">'+(n<9?'0':'')+(n+1)+'</span>'+
+      esc(t.t)+(t.r==='high'?'<span class="rel" title="hohe Klausurrelevanz">Klausur</span>':'')+
+      '<span class="pm"><i></i><b></b></span></button>'+
+      '<div class="a">'+topicBody(t)+'</div></div>';
   }).join('');
   $$('#modes .mode').forEach(function(b){b.classList.toggle('on',b.dataset.tab==='cards')});
   reset();render();
@@ -24,8 +27,11 @@ window.openLF=function(i){
 $('#thlist').addEventListener('click',function(e){
   var b=e.target.closest('.th > button');if(!b)return;
   var th=b.parentElement,was=th.classList.contains('open');
-  $$('#thlist .th').forEach(function(x){x.classList.remove('open')});
-  if(!was)th.classList.add('open');
+  $$('#thlist .th').forEach(function(x){
+    x.classList.remove('open');
+    var btn=x.querySelector('button');if(btn)btn.setAttribute('aria-expanded','false');
+  });
+  if(!was){th.classList.add('open');b.setAttribute('aria-expanded','true')}
 });
 $$('#modes .mode').forEach(function(b){
   b.addEventListener('click',function(){
@@ -47,7 +53,38 @@ function reset(){
   clearInterval(exTimer);exTimer=null;exAns=[];exQ=0;exDone=false;exStart=0;
 }
 function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=a[i];a[i]=a[j];a[j]=t}return a}
-function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;')}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+/* Die Themen aus der Altversion tragen einen Markdown-artigen Fließtext.
+   Statt eine Bibliothek einzubinden, wird hier zuerst ALLES escaped und
+   erst danach das erlaubte Wenige zu HTML gemacht: **fett**, Aufzählungen
+   und Absätze. Fremdes Markup kann so nicht durchrutschen. */
+function md(src){
+  var lines=esc(src).split(/\r?\n/),out='',list=false;
+  lines.forEach(function(raw){
+    var line=raw.trim();
+    if(!line){if(list){out+='</ul>';list=false}return}
+    line=line.replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>');
+    if(/^[-•]\s+/.test(line)){
+      if(!list){out+='<ul>';list=true}
+      out+='<li>'+line.replace(/^[-•]\s+/,'')+'</li>';
+      return;
+    }
+    if(list){out+='</ul>';list=false}
+    out+='<p>'+line+'</p>';
+  });
+  if(list)out+='</ul>';
+  return out;
+}
+
+function topicBody(t){
+  var html='<p class="lead">'+esc(t.d)+'</p>';
+  if(t.c)html+=md(t.c);
+  if(t.k&&t.k.length)
+    html+='<div class="keys"><span class="mono">Kernpunkte</span><ul>'+
+      t.k.map(function(k){return '<li>'+esc(k)+'</li>'}).join('')+'</ul></div>';
+  return html;
+}
 function pcto(el,to){requestAnimationFrame(function(){el.style.width=to+'%'})}
 
 function render(){
@@ -105,6 +142,10 @@ function cards(){
 }
 function cardsDone(){
   var p=$('#practice'),ok=known.length,rest=again.length;
+  // Nur ein vollständiger Durchlauf über den ganzen Stapel zählt für den
+  // Fortschritt — sonst würde ein Nachlauf über drei offene Karten den
+  // Balken auf 100 % ziehen.
+  if(window.PROGRESS&&order.length===cur.cards.length)window.PROGRESS.cards(cur.code,ok,cur.cards.length);
   $('#prMeta').textContent='Durchlauf beendet';
   p.innerHTML='<div class="prdone"><span class="mono">Durchlauf</span><b>'+ok+' / '+order.length+'</b>'+
     '<span class="ds">'+(rest?rest+' Karten hast du auf „Nochmal“ gelegt.':'Alle Karten saßen. Weiter zum Quiz?')+'</span>'+
@@ -153,6 +194,7 @@ function quiz(){
 }
 function quizDone(){
   var p=$('#practice'),n=qorder.length,pct=Math.round(score/n*100);
+  if(window.PROGRESS&&n===cur.quiz.length)window.PROGRESS.quiz(cur.code,score,cur.quiz.length);
   $('#prMeta').textContent='Ergebnis';
   p.innerHTML='<div class="prdone"><span class="mono">Ergebnis</span><b>'+score+' / '+n+'</b>'+
     '<span class="ds">'+(pct===100?'Alles richtig. Bereit für die Klausur.':pct>=60?'Solide. '+wrongIdx.length+' Fragen sitzen noch nicht.':'Die Karten im Flashcard-Tab helfen weiter.')+'</span>'+
@@ -222,6 +264,7 @@ function examQ(){
 function examResult(){
   var p=$('#practice'),n=qorder.length,pts=0;
   qorder.forEach(function(qidx,i){if(exAns[i]===cur.quiz[qidx].c)pts++});
+  if(window.PROGRESS)window.PROGRESS.quiz(cur.code,pts,n);
   var pct=Math.round(pts/n*100),
       note=pct>=92?'1':pct>=81?'2':pct>=67?'3':pct>=50?'4':pct>=30?'5':'6',
       used=Math.floor((Date.now()-exStart)/1000),
