@@ -27,6 +27,12 @@ verbinden → `KIMIII-DEV/Izure` → Branch `main`.
 
 Danach deployt jeder Push automatisch.
 
+> **Der Worker heißt `iruze`**, nicht `izure` — historisch gewachsen, und
+> genau so steht es in `wrangler.jsonc`. Der Name muss übereinstimmen: ein
+> anderer Name legt beim Deploy einen zweiten, leeren Worker an — ohne
+> `TOTP_SECRET` und ohne die Custom Domains. Der Login schlüge dort bei
+> jedem Code fehl.
+
 ## 2) TOTP-Secret erzeugen (Pflicht)
 
 Das Secret ist der einzige Schlüssel zum privaten Layer. Ohne gesetztes
@@ -45,7 +51,7 @@ console.log(out);
 "
 ```
 
-Dashboard → **Workers & Pages → izure → Settings → Variables and secrets
+Dashboard → **Workers & Pages → iruze → Settings → Variables and secrets
 → Add → Type: Secret**
 
 | Name | Wert |
@@ -112,6 +118,10 @@ npx wrangler dev --var DEV_BYPASS:0 --var TOTP_SECRET:<dein-test-secret>
 ## Vor dem Livegang
 
 - [ ] `TOTP_SECRET` gesetzt und Authenticator-App eingerichtet
+- [ ] **`DEV_BYPASS` darf in der Produktionsumgebung NICHT gesetzt sein.**
+      Dashboard → iruze → Settings → Variables and secrets prüfen. Steht dort
+      `DEV_BYPASS=1`, ist der private Layer für alle offen — die Variable
+      hebt Login und Bot-Check auf und gehört ausschließlich in `wrangler dev`.
 - [ ] **`imprint.html` ausfüllen** — Anschrift und Telefonnummer sind nach
       § 5 DDG Pflicht und stehen dort noch als Platzhalter. Ohne sie ist die
       Seite abmahnfähig.

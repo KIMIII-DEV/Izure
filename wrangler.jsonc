@@ -3,7 +3,12 @@
 // Secrets setzen + Authenticator-App einrichten: siehe DEPLOY.md
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "izure",
+  // Muss dem in Cloudflare verbundenen Worker entsprechen — der heißt aus
+  // historischen Gründen "iruze". Ein abweichender Name legt beim Deploy
+  // einen ZWEITEN, leeren Worker an: ohne TOTP_SECRET (das hängt am
+  // bestehenden) und ohne die Custom Domains. Der Login schlüge dann bei
+  // jedem Code fehl. Rein internes Label, die Domain bleibt izu-re.com.
+  "name": "iruze",
   "compatibility_date": "2026-07-16",
   "main": "worker/index.ts",
   "assets": {
