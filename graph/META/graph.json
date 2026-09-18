@@ -1,0 +1,660 @@
+{
+ "generated": "2026-09-18T07:19:27.508Z",
+ "counts": {
+  "notes": 29,
+  "links": 49,
+  "raw": 0,
+  "sorted": 29
+ },
+ "nodes": [
+  {
+   "id": "aufgabe-lf03",
+   "type": "Aufgabe",
+   "provenance": "FACT",
+   "confidence": 0.9,
+   "tags": [
+    "offen",
+    "lernen"
+   ],
+   "path": "/SORT/aufgaben/lf03-karten-fertig.md",
+   "stage": "SORT",
+   "updated": "2026-09-06",
+   "body": "Restliche acht Karten aus Lernfeld 03 durchziehen. Marco hat die Aufgabe aus dem stehengebliebenen Fortschritt abgeleitet."
+  },
+  {
+   "id": "lernfeld-03",
+   "type": "Dokument",
+   "provenance": "FACT",
+   "confidence": 1,
+   "tags": [
+    "lernfeld",
+    "kommunikation"
+   ],
+   "path": "/SORT/dokumente/lernfeld-03.md",
+   "stage": "SORT",
+   "updated": "2026-09-02",
+   "body": "Zuhören und Fragetechnik: offene und geschlossene Fragen, Paraphrase, Trichtermodell. 14 Karten, aktuell bei 45 Prozent."
+  },
+  {
+   "id": "entscheidung-darkmode",
+   "type": "Entscheidung",
+   "provenance": "FACT",
+   "confidence": 0.86,
+   "tags": [
+    "design",
+    "festgelegt"
+   ],
+   "path": "/SORT/entscheidungen/dark-mode-default.md",
+   "stage": "SORT",
+   "updated": "2026-05-02",
+   "body": "Privat Layer bleibt dunkel, Public Layer hell. Begründung: der private Bereich wird abends und in langen Sessions benutzt."
+  },
+  {
+   "id": "umzug-2024",
+   "type": "Ereignis",
+   "provenance": "MEMORY",
+   "confidence": 0.78,
+   "tags": [
+    "leben"
+   ],
+   "path": "/SORT/ereignisse/umzug-2024.md",
+   "stage": "SORT",
+   "updated": "2026-03-19",
+   "body": "Umzug nach Hamburg. Startpunkt der aktuellen Ausbildung und der ersten eigenen Projekte."
+  },
+  {
+   "id": "ersten-deploy",
+   "type": "Erinnerung",
+   "provenance": "MEMORY",
+   "confidence": 0.8,
+   "tags": [
+    "meilenstein"
+   ],
+   "path": "/SORT/erinnerungen/erster-deploy.md",
+   "stage": "SORT",
+   "updated": "2026-07-14",
+   "body": "Erster erfolgreicher Deploy nach vier Fehlversuchen, kurz nach zwei Uhr nachts. Danach wurde die Domain verbunden."
+  },
+  {
+   "id": "schlafrhythmus",
+   "type": "Erinnerung",
+   "provenance": "CONFLICT",
+   "confidence": 0.7,
+   "tags": [
+    "schlaf",
+    "konflikt"
+   ],
+   "path": "/SORT/erinnerungen/schlafrhythmus-frueh.md",
+   "stage": "SORT",
+   "updated": "2026-09-06",
+   "body": "Notiert im Februar: fester Rhythmus, 22:30 Uhr Schlaf, 6:15 Uhr auf. Steht im Widerspruch zur späteren Notiz über Nachtlernen."
+  },
+  {
+   "id": "spaced-repetition",
+   "type": "Fähigkeit",
+   "provenance": "FACT",
+   "confidence": 0.88,
+   "tags": [
+    "methodik",
+    "karten"
+   ],
+   "path": "/SORT/faehigkeiten/spaced-repetition.md",
+   "stage": "SORT",
+   "updated": "2026-08-19",
+   "body": "Wiederholung in wachsenden Abständen. In der Lernplattform als Kartenstapel pro Lernfeld umgesetzt."
+  },
+  {
+   "id": "typescript",
+   "type": "Fähigkeit",
+   "provenance": "FACT",
+   "confidence": 0.9,
+   "tags": [
+    "code",
+    "stack"
+   ],
+   "path": "/SORT/faehigkeiten/typescript.md",
+   "stage": "SORT",
+   "updated": "2026-09-01",
+   "body": "Hauptsprache der eigenen Projekte. Typisierung ist der Grund, warum die Lernplattform trotz vieler Datenformen wartbar bleibt."
+  },
+  {
+   "id": "marco-voice",
+   "type": "Idee",
+   "provenance": "HYPOTHESIS",
+   "confidence": 0.32,
+   "tags": [
+    "unbestätigt",
+    "sprache"
+   ],
+   "path": "/SORT/ideen/marco-voice.md",
+   "stage": "SORT",
+   "updated": "2026-09-06",
+   "body": "Sprachein- und -ausgabe für Marco während der Lernblöcke. Reine Hypothese, kein Beschluss."
+  },
+  {
+   "id": "huberman",
+   "type": "Medium",
+   "provenance": "FACT",
+   "confidence": 0.75,
+   "tags": [
+    "podcast",
+    "quelle"
+   ],
+   "path": "/SORT/medien/huberman-neuroplastizitaet.md",
+   "stage": "SORT",
+   "updated": "2026-06-05",
+   "body": "Podcast-Folge zu Lernfenstern und Schlaf. Quelle für mehrere Nodes im Lern-Cluster."
+  },
+  {
+   "id": "samurai-playlist",
+   "type": "Medium",
+   "provenance": "MEMORY",
+   "confidence": 0.65,
+   "tags": [
+    "musik",
+    "fokus"
+   ],
+   "path": "/SORT/medien/samurai-playlist.md",
+   "stage": "SORT",
+   "updated": "2026-09-04",
+   "body": "Feste Fokus-Playlist, läuft in der Ambiance-Karte. Wird fast nur in späten Sessions gestartet."
+  },
+  {
+   "id": "marco",
+   "type": "Konzept",
+   "provenance": "FACT",
+   "confidence": 1,
+   "tags": [
+    "ki",
+    "agent"
+   ],
+   "path": "/SORT/menschen/marco.md",
+   "stage": "SORT",
+   "updated": "2026-09-06",
+   "body": "Persönliche KI. Liest den Graphen maschinell, ergänzt Nodes und Beziehungen und begründet jede Schreibaktion im Aktivitätsprotokoll."
+  },
+  {
+   "id": "maurice",
+   "type": "Person",
+   "provenance": "FACT",
+   "confidence": 1,
+   "tags": [
+    "owner",
+    "profil"
+   ],
+   "path": "/SORT/menschen/maurice.md",
+   "stage": "SORT",
+   "updated": "2026-09-04",
+   "body": "Eigentümer dieses Graphen. Auszubildender im Dialogmarketing, baut parallel eigene Web-Projekte. Arbeitet morgens am konzentriertesten."
+  },
+  {
+   "id": "fokus-morgens",
+   "type": "Notiz",
+   "provenance": "INFERENCE",
+   "confidence": 0.58,
+   "tags": [
+    "abgeleitet",
+    "rhythmus"
+   ],
+   "path": "/SORT/notizen/fokus-morgens.md",
+   "stage": "SORT",
+   "updated": "2026-09-05",
+   "body": "Abgeleitet aus Timer-Läufen: die längsten Fokusblöcke liegen zwischen 7 und 11 Uhr. Noch nicht bestätigt, deshalb gedämpft dargestellt."
+  },
+  {
+   "id": "nachtlernen",
+   "type": "Notiz",
+   "provenance": "CONFLICT",
+   "confidence": 0.44,
+   "tags": [
+    "schlaf",
+    "konflikt"
+   ],
+   "path": "/SORT/notizen/nachtlernen.md",
+   "stage": "SORT",
+   "updated": "2026-09-06",
+   "body": "Notiert im August: die Karten laufen nach 23 Uhr am besten. Widerspricht dem früheren Schlafrhythmus — Marco hat den Konflikt markiert statt eine Version zu löschen."
+  },
+  {
+   "id": "hamburg",
+   "type": "Ort",
+   "provenance": "FACT",
+   "confidence": 1,
+   "tags": [
+    "wohnort"
+   ],
+   "path": "/SORT/orte/hamburg.md",
+   "stage": "SORT",
+   "updated": "2026-06-20",
+   "body": "Wohn- und Arbeitsort. Referenz für Wetter und lokale Termine im Privat Layer."
+  },
+  {
+   "id": "lernplattform",
+   "type": "Projekt",
+   "provenance": "FACT",
+   "confidence": 1,
+   "tags": [
+    "repo",
+    "lernfelder"
+   ],
+   "path": "/SORT/projekte/lernplattform-kommunikation.md",
+   "stage": "SORT",
+   "updated": "2026-09-07",
+   "body": "Eigene Lernplattform für die Kommunikations-Lernfelder. Repo: KIMIII-DEV/lernplattform_kommunikation, Deploy über Vercel."
+  },
+  {
+   "id": "portfolio-relaunch",
+   "type": "Projekt",
+   "provenance": "FACT",
+   "confidence": 1,
+   "tags": [
+    "web",
+    "public-layer"
+   ],
+   "path": "/SORT/projekte/portfolio-relaunch.md",
+   "stage": "SORT",
+   "updated": "2026-09-03",
+   "body": "Public Layer des Portfolios mit Code-Gate zum Privat Layer. Aus diesem Projekt entstand die Trennung in öffentliche und private Ebene."
+  },
+  {
+   "id": "pruefung-ihk",
+   "type": "Termin",
+   "provenance": "FACT",
+   "confidence": 0.95,
+   "tags": [
+    "prüfung",
+    "deadline"
+   ],
+   "path": "/SORT/termine/pruefung-ihk.md",
+   "stage": "SORT",
+   "updated": "2026-08-24",
+   "body": "Zwischenprüfung. Ab hier rechnet Marco die Lernplanung rückwärts."
+  },
+  {
+   "id": "izure",
+   "type": "Unternehmen",
+   "provenance": "FACT",
+   "confidence": 0.9,
+   "tags": [
+    "eigenes",
+    "marke"
+   ],
+   "path": "/SORT/unternehmen/izure.md",
+   "stage": "SORT",
+   "updated": "2026-08-31",
+   "body": "Eigene Marke für Web- und Produktarbeit. Dach über Portfolio und Lernplattform."
+  },
+  {
+   "id": "tagesschau",
+   "type": "Webseite",
+   "provenance": "FACT",
+   "confidence": 0.8,
+   "tags": [
+    "quelle",
+    "news"
+   ],
+   "path": "/SORT/webseiten/tagesschau.md",
+   "stage": "SORT",
+   "updated": "2026-09-07",
+   "body": "Nachrichtenquelle des Privat Layers. Der Worker holt den RSS-Feed der vier Ressorts\n(Ausland, Inland, Wirtschaft, Digitales) und übersetzt ihn in JSON — der Browser spricht\nnie direkt mit tagesschau.de. Speist die Dashboard-Karte und die Ansicht „Nachrichten“."
+  },
+  {
+   "id": "gesundheit",
+   "type": "Interesse",
+   "provenance": "FACT",
+   "confidence": 0.9,
+   "tags": [
+    "körper",
+    "routine"
+   ],
+   "path": "/SORT/wissen/interessen/gesundheit.md",
+   "stage": "SORT",
+   "updated": "2026-08-28",
+   "body": "Sammelknoten für Schlaf, Training und Ernährung. Marco nutzt ihn, um Lernleistung mit körperlichen Faktoren zu verknüpfen."
+  },
+  {
+   "id": "interessenprofil",
+   "type": "Konzept",
+   "provenance": "INFERENCE",
+   "confidence": 0.61,
+   "tags": [
+    "abgeleitet",
+    "profil"
+   ],
+   "path": "/SORT/wissen/interessen/interessenprofil.md",
+   "stage": "SORT",
+   "updated": "2026-09-06",
+   "body": "Von Marco abgeleitetes Bild der persönlichen Interessen. Gewichtung aus Häufigkeit und Aktualität der verknüpften Nodes, nicht aus einer Selbstauskunft."
+  },
+  {
+   "id": "krafttraining",
+   "type": "Interesse",
+   "provenance": "MEMORY",
+   "confidence": 0.85,
+   "tags": [
+    "training",
+    "routine"
+   ],
+   "path": "/SORT/wissen/interessen/krafttraining.md",
+   "stage": "SORT",
+   "updated": "2026-08-12",
+   "body": "Drei Einheiten pro Woche, seit Februar durchgehalten. Nach Trainingstagen sind die Abende zum Lernen kaum brauchbar."
+  },
+  {
+   "id": "politik-interesse",
+   "type": "Interesse",
+   "provenance": "INFERENCE",
+   "confidence": 0.55,
+   "tags": [
+    "abgeleitet"
+   ],
+   "path": "/SORT/wissen/interessen/politik-interesse.md",
+   "stage": "SORT",
+   "updated": "2026-09-07",
+   "body": "Aus der Nutzung der Nachrichtenkarte abgeleitet. Noch dünn belegt, daher niedrige Confidence."
+  },
+  {
+   "id": "gehirn",
+   "type": "Konzept",
+   "provenance": "FACT",
+   "confidence": 0.99,
+   "tags": [
+    "neuro",
+    "biologie"
+   ],
+   "path": "/SORT/wissen/konzepte/gehirn.md",
+   "stage": "SORT",
+   "updated": "2026-07-30",
+   "body": "Organ hinter allen Lernprozessen. Reagiert auf Schlaf, Bewegung und Belastung — deshalb hängt der Lern-Cluster am Gesundheits-Cluster."
+  },
+  {
+   "id": "lernen",
+   "type": "Konzept",
+   "provenance": "FACT",
+   "confidence": 0.98,
+   "tags": [
+    "kern",
+    "methodik"
+   ],
+   "path": "/SORT/wissen/konzepte/lernen.md",
+   "stage": "SORT",
+   "updated": "2026-09-05",
+   "body": "Zentraler Cluster des Graphen. Verbindet Methodik, Prüfungsvorbereitung und persönliche Interessen."
+  },
+  {
+   "id": "neuroplastizitaet",
+   "type": "Konzept",
+   "provenance": "FACT",
+   "confidence": 0.92,
+   "tags": [
+    "neuro",
+    "lernen"
+   ],
+   "path": "/SORT/wissen/konzepte/neuroplastizitaet.md",
+   "stage": "SORT",
+   "updated": "2026-08-21",
+   "body": "Fähigkeit des Nervensystems, Verschaltungen unter Gebrauch umzubauen. Grundlage dafür, dass Wiederholung überhaupt etwas verändert."
+  },
+  {
+   "id": "pomodoro",
+   "type": "Konzept",
+   "provenance": "FACT",
+   "confidence": 0.93,
+   "tags": [
+    "fokus",
+    "timer"
+   ],
+   "path": "/SORT/wissen/konzepte/pomodoro.md",
+   "stage": "SORT",
+   "updated": "2026-08-15",
+   "body": "25 Minuten Arbeit, fünf Minuten Pause. Im Privat Layer als Timer neben der Ambiance-Karte eingebaut."
+  }
+ ],
+ "links": [
+  {
+   "source": "aufgabe-lf03",
+   "target": "lernfeld-03",
+   "rel": "gehört zu"
+  },
+  {
+   "source": "aufgabe-lf03",
+   "target": "pomodoro",
+   "rel": "verwendet"
+  },
+  {
+   "source": "lernfeld-03",
+   "target": "aufgabe-lf03",
+   "rel": "erwähnt"
+  },
+  {
+   "source": "lernfeld-03",
+   "target": "pruefung-ihk",
+   "rel": "folgt auf"
+  },
+  {
+   "source": "entscheidung-darkmode",
+   "target": "portfolio-relaunch",
+   "rel": "gehört zu"
+  },
+  {
+   "source": "umzug-2024",
+   "target": "hamburg",
+   "rel": "befindet sich in"
+  },
+  {
+   "source": "umzug-2024",
+   "target": "maurice",
+   "rel": "erinnert an"
+  },
+  {
+   "source": "ersten-deploy",
+   "target": "portfolio-relaunch",
+   "rel": "entstanden aus"
+  },
+  {
+   "source": "schlafrhythmus",
+   "target": "nachtlernen",
+   "rel": "widerspricht"
+  },
+  {
+   "source": "schlafrhythmus",
+   "target": "gesundheit",
+   "rel": "unterstützt"
+  },
+  {
+   "source": "spaced-repetition",
+   "target": "lernplattform",
+   "rel": "verwendet"
+  },
+  {
+   "source": "typescript",
+   "target": "maurice",
+   "rel": "gehört zu"
+  },
+  {
+   "source": "marco-voice",
+   "target": "marco",
+   "rel": "basiert auf"
+  },
+  {
+   "source": "marco-voice",
+   "target": "typescript",
+   "rel": "verwendet"
+  },
+  {
+   "source": "huberman",
+   "target": "neuroplastizitaet",
+   "rel": "erwähnt"
+  },
+  {
+   "source": "huberman",
+   "target": "schlafrhythmus",
+   "rel": "unterstützt"
+  },
+  {
+   "source": "samurai-playlist",
+   "target": "nachtlernen",
+   "rel": "erinnert an"
+  },
+  {
+   "source": "samurai-playlist",
+   "target": "pomodoro",
+   "rel": "unterstützt"
+  },
+  {
+   "source": "marco",
+   "target": "maurice",
+   "rel": "arbeitet mit"
+  },
+  {
+   "source": "marco",
+   "target": "interessenprofil",
+   "rel": "erstellt von"
+  },
+  {
+   "source": "maurice",
+   "target": "hamburg",
+   "rel": "befindet sich in"
+  },
+  {
+   "source": "maurice",
+   "target": "izure",
+   "rel": "arbeitet mit"
+  },
+  {
+   "source": "maurice",
+   "target": "lernen",
+   "rel": "interessiert sich für"
+  },
+  {
+   "source": "maurice",
+   "target": "gesundheit",
+   "rel": "interessiert sich für"
+  },
+  {
+   "source": "fokus-morgens",
+   "target": "schlafrhythmus",
+   "rel": "entstanden aus"
+  },
+  {
+   "source": "fokus-morgens",
+   "target": "lernen",
+   "rel": "unterstützt"
+  },
+  {
+   "source": "nachtlernen",
+   "target": "lernen",
+   "rel": "gehört zu"
+  },
+  {
+   "source": "lernplattform",
+   "target": "lernfeld-03",
+   "rel": "gehört zu"
+  },
+  {
+   "source": "lernplattform",
+   "target": "typescript",
+   "rel": "verwendet"
+  },
+  {
+   "source": "lernplattform",
+   "target": "izure",
+   "rel": "gehört zu"
+  },
+  {
+   "source": "portfolio-relaunch",
+   "target": "entscheidung-darkmode",
+   "rel": "erwähnt"
+  },
+  {
+   "source": "portfolio-relaunch",
+   "target": "typescript",
+   "rel": "verwendet"
+  },
+  {
+   "source": "portfolio-relaunch",
+   "target": "ersten-deploy",
+   "rel": "erinnert an"
+  },
+  {
+   "source": "pruefung-ihk",
+   "target": "lernen",
+   "rel": "basiert auf"
+  },
+  {
+   "source": "izure",
+   "target": "hamburg",
+   "rel": "befindet sich in"
+  },
+  {
+   "source": "izure",
+   "target": "portfolio-relaunch",
+   "rel": "gehört zu"
+  },
+  {
+   "source": "tagesschau",
+   "target": "politik-interesse",
+   "rel": "gehört zu"
+  },
+  {
+   "source": "gesundheit",
+   "target": "krafttraining",
+   "rel": "gehört zu"
+  },
+  {
+   "source": "gesundheit",
+   "target": "schlafrhythmus",
+   "rel": "gehört zu"
+  },
+  {
+   "source": "interessenprofil",
+   "target": "lernen",
+   "rel": "interessiert sich für"
+  },
+  {
+   "source": "interessenprofil",
+   "target": "politik-interesse",
+   "rel": "gehört zu"
+  },
+  {
+   "source": "krafttraining",
+   "target": "interessenprofil",
+   "rel": "gehört zu"
+  },
+  {
+   "source": "krafttraining",
+   "target": "gesundheit",
+   "rel": "unterstützt"
+  },
+  {
+   "source": "gehirn",
+   "target": "gesundheit",
+   "rel": "gehört zu"
+  },
+  {
+   "source": "lernen",
+   "target": "spaced-repetition",
+   "rel": "verwendet"
+  },
+  {
+   "source": "lernen",
+   "target": "gehirn",
+   "rel": "basiert auf"
+  },
+  {
+   "source": "neuroplastizitaet",
+   "target": "gehirn",
+   "rel": "befindet sich in"
+  },
+  {
+   "source": "neuroplastizitaet",
+   "target": "lernen",
+   "rel": "unterstützt"
+  },
+  {
+   "source": "pomodoro",
+   "target": "fokus-morgens",
+   "rel": "unterstützt"
+  }
+ ]
+}

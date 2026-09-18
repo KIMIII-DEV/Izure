@@ -6,7 +6,7 @@ verlässt den Server ohne gültige Sitzung überhaupt nicht.
 
 ```
 Besucher ──► Worker ──┬─ /                 öffentlich
-                      ├─ /privacy /terms /imprint  öffentlich
+                      ├─ /404.html        Fehlerseite
                       ├─ /auth/*           Login (TOTP)
                       ├─ /api/config       Bot-Check-Konfiguration
                       ├─ /api/human        Turnstile einlösen
@@ -110,8 +110,19 @@ niemals in die Produktionsumgebung.
 Login lokal echt testen (statt Bypass):
 
 ```bash
-npx wrangler dev --var DEV_BYPASS:0 --var TOTP_SECRET:<dein-test-secret>
+npm run build
+npx wrangler dev --port 8787 --var DEV_BYPASS:0 --var TOTP_SECRET:<dein-test-secret>
 ```
+
+Wichtig: `wrangler dev` liefert aus `dist/`, nicht aus den Quelldateien.
+Nach jeder Änderung an `src/`, `private/src/` oder `graph/` erst
+`npm run build`, sonst testet man den alten Stand.
+
+Wetter und Nachrichten brauchen ausgehende Verbindungen zu
+`api.open-meteo.com` und `www.tagesschau.de`. Sind die im Netz gesperrt,
+antwortet `/api/weather` bzw. `/api/news` mit 502 — Karte und Ansicht
+zeigen dann ihren Hinweistext. Das ist das erwartete Verhalten, kein
+Fehler im Code.
 
 ---
 
@@ -122,14 +133,26 @@ npx wrangler dev --var DEV_BYPASS:0 --var TOTP_SECRET:<dein-test-secret>
       Dashboard → iruze → Settings → Variables and secrets prüfen. Steht dort
       `DEV_BYPASS=1`, ist der private Layer für alle offen — die Variable
       hebt Login und Bot-Check auf und gehört ausschließlich in `wrangler dev`.
-- [ ] **`imprint.html` ausfüllen** — Anschrift und Telefonnummer sind nach
-      § 5 DDG Pflicht und stehen dort noch als Platzhalter. Ohne sie ist die
-      Seite abmahnfähig.
+- [ ] **Impressum ausfüllen** — Anschrift und Telefonnummer sind nach § 5 DDG
+      Pflicht und stehen noch als Platzhalter in `index.html`. Alle Stellen
+      finden:
+
+      ```bash
+      grep -n 'class="todo"' index.html
+      ```
+
+      Betroffen sind der Abschnitt `#imprint` (Anschrift, Telefon, USt-IdNr.)
+      und im Abschnitt `#privacy` die verantwortliche Stelle sowie die
+      zuständige Aufsichtsbehörde. Ohne diese Angaben ist die Seite
+      abmahnfähig. Die Markierungen sind im Betrieb gelb sichtbar — sie
+      fallen also auf, statt still stehen zu bleiben.
 - [ ] Domain `izu-re.com` und `www.izu-re.com` als Custom Domain verbunden
       (steht in `wrangler.jsonc`)
-- [ ] Falls Reichweitenmessung gewünscht: Anbieter in `src/consent.js`
-      unter `ANALYTICS` eintragen (Abschnitt 9 der Datenschutzerklärung
-      passt dann automatisch, weil sie den Einwilligungsvorbehalt bereits
-      beschreibt)
-- [ ] Optional: Kundenlogos als `public/images/brands/<slug>.svg` ablegen und
-      den Slug in `BRAND_LOGOS` (in `index.html`) eintragen
+- [ ] Falls Reichweitenmessung gewünscht: Anbieter in `src/shell.js` unter
+      `ANALYTICS` eintragen. Der Einwilligungsbanner ist bereits scharf und
+      setzt ein echtes Cookie (`izure_consent`, 182 Tage); geladen wird der
+      Anbieter erst nach „Verstanden“. Die Datenschutzerklärung beschreibt
+      den Einwilligungsvorbehalt schon, sie muss dafür nicht geändert werden.
+- [ ] Kundenliste prüfen: `BRANDS` in `src/shell.js`
+- [ ] `graph/` durchsehen — das Repository ist öffentlich, alles dort ist
+      damit veröffentlicht (siehe `graph/README.md`)

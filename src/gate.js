@@ -1,24 +1,45 @@
-/* Zugang zum Privat Layer — TOTP-Login gegen den Worker.
+/* ═══ Gate · Zugang zum Private Layer ═══════════════════════════════
 
-   Hier steht bewusst KEIN Code und kein Geheimnis. Die sechs Ziffern gehen
-   an /auth/verify; der Worker prüft sie gegen das TOTP-Secret (Google-
-   Authenticator-Stil, rotiert alle 30 s) und setzt bei Erfolg ein
-   httpOnly-Session-Cookie, an das JavaScript nicht herankommt. Erst dieses
-   Cookie öffnet /private/ — ohne es liefert der Worker den privaten Layer
-   gar nicht erst aus. Dieses Skript kann also niemanden hineinlassen, es
-   kann nur fragen. */
+   Die Lieferung verglich hier einen Code im Klartext:
+
+       var CODE=(window.MRCFG&&window.MRCFG.accessCode)||'428173';
+       if(code()===CODE){ ... localStorage.setItem('mr-layer-unlocked','1') }
+
+   Das ist kein Schutz. Der Code stand im Quelltext, und der Merker lag im
+   localStorage — beides mit den Entwicklerwerkzeugen in Sekunden zu lesen
+   und zu setzen. Der Private Layer war damit für jeden offen, der einmal
+   hinschaut.
+
+   Jetzt gehen die sechs Ziffern an /auth/verify. Der Worker prüft sie
+   gegen ein TOTP-Secret (RFC 6238, rotiert alle 30 Sekunden), das nur als
+   verschlüsseltes Worker-Secret existiert. Bei Erfolg setzt er ein
+   HMAC-signiertes httpOnly-Cookie, an das JavaScript nicht herankommt —
+   und erst dieses Cookie öffnet /private/.
+
+   Dieses Skript kann also niemanden hineinlassen. Es kann nur fragen. */
 (function () {
+  'use strict';
+
   var gate = document.getElementById('gate');
   if (!gate) return;
 
-  var DEST = gate.getAttribute('data-dest') || '/private/';
-  var ins = [].slice.call(gate.querySelectorAll('.gate-code input'));
-  var go = gate.querySelector('.gate-go');
-  var card = gate.querySelector('.gate-card');
-  var sub = card.querySelector('.gate-sub');
-  var err = card.querySelector('.gate-err');
-  var busy = false;
-  var SUB_DEFAULT = sub.textContent;
+  var ins = [].slice.call(gate.querySelectorAll('.gate-code input')),
+    go = gate.querySelector('.gate-go'),
+    card = gate.querySelector('.gate-card'),
+    sub = gate.querySelector('.gate-sub'),
+    err = gate.querySelector('.gate-err'),
+    lastFocus = null,
+    busy = false;
+
+  var SUB_DEFAULT = sub ? sub.textContent : '';
+  var ERR_DEFAULT = err ? err.textContent : '';
+
+  function de() {
+    return document.documentElement.lang === 'de';
+  }
+  function t(deText, enText) {
+    return de() ? deText : enText;
+  }
 
   function code() {
     return ins
@@ -37,7 +58,7 @@
 
   function setBusy(state) {
     busy = state;
-    go.textContent = state ? 'Checking …' : 'Unlock';
+    go.textContent = state ? t('Prüfe …', 'Checking …') : t('Entsperren', 'Unlock');
     ins.forEach(function (i) {
       i.disabled = state;
     });
@@ -45,9 +66,9 @@
   }
 
   function fail(message) {
-    if (message) err.textContent = message;
+    if (err) err.textContent = message || ERR_DEFAULT;
     gate.classList.remove('bad');
-    void card.offsetWidth; // Reflow, damit die Shake-Animation neu startet
+    void card.offsetWidth; // Reflow, sonst startet die Shake-Animation nicht neu
     gate.classList.add('bad');
     setTimeout(function () {
       ins.forEach(function (i) {
@@ -59,6 +80,7 @@
   }
 
   function open() {
+    lastFocus = document.activeElement;
     gate.hidden = false;
     requestAnimationFrame(function () {
       gate.classList.add('in');
@@ -68,15 +90,20 @@
     }, 260);
   }
 
-  function close() {
+  function close(silent) {
     gate.classList.remove('in', 'bad', 'ok');
     setTimeout(function () {
       gate.hidden = true;
       ins.forEach(function (i) {
         i.value = '';
+        i.disabled = false;
       });
-      sub.textContent = SUB_DEFAULT;
+      busy = false;
+      if (sub) sub.textContent = SUB_DEFAULT;
+      if (err) err.textContent = ERR_DEFAULT;
+      go.textContent = t('Entsperren', 'Unlock');
       sync();
+      if (!silent && lastFocus && lastFocus.focus) lastFocus.focus();
     }, 320);
   }
 
@@ -85,7 +112,7 @@
     setBusy(true);
     fetch('/auth/verify', {
       method: 'POST',
-      headers: { 'content-type': 'application/json' },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ code: code() }),
       credentials: 'same-origin',
     })
@@ -93,22 +120,34 @@
         if (res.ok) {
           gate.classList.remove('bad');
           gate.classList.add('ok');
-          go.textContent = 'Unlocked';
+          go.textContent = t('Entsperrt', 'Unlocked');
           setTimeout(function () {
-            location.href = DEST;
+            if (window.MROPEN) window.MROPEN();
+            else location.href = '/private/';
           }, 480);
           return;
         }
         setBusy(false);
         fail(
           res.status === 401
-            ? 'That code is not valid. Use the current code from your authenticator app.'
-            : 'Sign-in is unavailable right now. Please try again later.'
+            ? t(
+                'Dieser Code stimmt nicht. Bitte den aktuellen Code aus der Authenticator-App verwenden.',
+                'That code is not valid. Use the current code from your authenticator app.'
+              )
+            : t(
+                'Anmeldung gerade nicht möglich. Bitte später erneut versuchen.',
+                'Sign-in is unavailable right now. Please try again later.'
+              )
         );
       })
       .catch(function () {
         setBusy(false);
-        fail('No connection to the server. Check your network and try again.');
+        fail(
+          t(
+            'Keine Verbindung zum Server. Bitte Netzwerk prüfen.',
+            'No connection to the server. Check your network and try again.'
+          )
+        );
       });
   }
 
@@ -150,19 +189,24 @@
   });
 
   go.addEventListener('click', submit);
-  gate.querySelector('.gate-x').addEventListener('click', close);
-  gate.querySelector('.gate-back').addEventListener('click', close);
+  gate.querySelector('.gate-x').addEventListener('click', function () {
+    close();
+  });
+  gate.querySelector('.gate-back').addEventListener('click', function () {
+    close();
+  });
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape' && !gate.hidden) close();
   });
 
   [].slice.call(document.querySelectorAll('.gate-open')).forEach(function (b) {
     b.addEventListener('click', function () {
-      // Läuft die Session noch, geht es ohne erneute Code-Eingabe weiter.
+      // Läuft die Sitzung noch, geht es ohne erneute Eingabe weiter.
       fetch('/auth/check', { credentials: 'same-origin' })
         .then(function (res) {
           if (res.ok) {
-            location.href = DEST;
+            if (window.MROPEN) window.MROPEN();
+            else location.href = '/private/';
             return;
           }
           open();
@@ -171,9 +215,9 @@
     });
   });
 
-  // Der Worker schickt abgelaufene /private/-Aufrufe mit ?login=1 hierher zurück.
+  // Abgelaufene /private/-Aufrufe schickt der Worker mit ?login=1 zurück.
   if (/[?&]login=1\b/.test(location.search)) {
-    sub.textContent = 'Your session expired. Please sign in again.';
+    if (sub) sub.textContent = t('Die Sitzung ist abgelaufen. Bitte neu anmelden.', 'Your session expired. Please sign in again.');
     open();
     history.replaceState(null, '', location.pathname);
   }

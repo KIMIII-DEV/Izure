@@ -4,9 +4,13 @@ Zwei Layer, ein Cloudflare Worker. Ersetzt die Vorgängerversion
 (`lernplattform_kommunikation`).
 
 - **Public Layer** (`/`) — Portfolio- und Marketingseite, offen für alle.
-- **Private Layer** (`/private/`) — Dashboard mit Lernecke (Flashcards,
-  Quiz, Klausur), Widgets (Kalender, Wetter, Nachrichten, Pomodoro) und
-  Einstellungen. Erreichbar nur nach Anmeldung.
+  Datenschutz, Nutzungsbedingungen und Impressum liegen als eigene
+  Abschnitte in derselben Seite und werden über `#privacy`, `#terms` und
+  `#imprint` eingeblendet.
+- **Private Layer** (`/private/`) — eigenes Dokument, eigene Bundles.
+  Dashboard mit Lernecke (Themen, Flashcards, Quiz, Klausur),
+  Wissensgraph, Wetter, Nachrichten, Pomodoro, Ambiance und Einstellungen.
+  Erreichbar nur nach Anmeldung.
 
 Deploy, Secrets und Authenticator-Einrichtung: **[DEPLOY.md](DEPLOY.md)**
 
@@ -22,7 +26,7 @@ Der private Layer ist **serverseitig** geschützt, nicht im Browser:
 - **Alles** unter `/private/` — HTML, CSS, Skripte, sämtliche Lerninhalte —
   wird ohne gültiges Cookie gar nicht erst ausgeliefert. Auch die
   gebündelten Dateien liegen deshalb unter `/private/assets/` und nicht im
-  öffentlichen `/assets/`.
+  öffentlichen `/assets/`; dafür sorgt `vite.config.js`.
 - `/api/weather` und `/api/news` verlangen dieselbe Sitzung.
 
 Dazu kommen CSP mit Nonce, HSTS, `X-Frame-Options`, `noindex` auf dem
@@ -31,37 +35,66 @@ privaten Layer und ein optionaler Turnstile-Bot-Check.
 ## Stack
 
 Statisches HTML/CSS/JS, gebaut mit Vite als mehrseitige Anwendung,
-ausgeliefert von einem Cloudflare Worker. Kein Framework-Runtime — beide
-Layer sind handgebaute, absolut positionierte Layouts.
+ausgeliefert von einem Cloudflare Worker. Kein Framework-Runtime.
 
 ```
-index.html                 Public Layer
-privacy.html               Datenschutzerklärung (DSGVO)
-terms.html                 Nutzungsbedingungen
-imprint.html               Impressum — Anschrift vor Livegang ausfüllen
-404.html                   Fehlerseite
+index.html                  Public Layer inkl. Datenschutz, AGB, Impressum
+404.html                    Fehlerseite
 
-src/style.css              Public Layer: Desktop (skaliertes 1920er Layout)
-                            + eigenes Mobil-Layout unter 1180 px
-src/page.css               Textseiten (Recht, 404)
-src/motion.js              Scroll-Reveals, Typewriter, FAQ, Testimonials, Navigation
-src/gate.js                Login-Dialog → /auth/verify
-src/consent.js             Cookie-Hinweis, Analytics-Einbindung, Turnstile
-src/contact.js             Kontaktformular: Prüfung + Versand
+src/public.css              Public Layer, Desktop + Mobil
+src/fonts.css               Schriftbindungen
+src/shell.js                Sprache, Marken-Laufband, Cookie-Einwilligung,
+                             Kontaktformular, Rechtsabschnitte
+src/gate.js                 Login-Dialog → /auth/verify
+src/motion.js               Scroll-Reveals, Typewriter, Navigation
 
-private/index.html         Private Layer
-private/src/lernecke-data.js  Lernfelder 1–5: Themen, Flashcards, Quiz
-private/src/lernfeld.js       Flashcards, Quiz, Klausur
-private/src/shell.js          Router, Dashboard, Einstellungen
-private/src/widgets.js        Kalender, Tag/Jahr, Wetter, Nachrichten
-private/src/profile.js        Name + Lernfortschritt (lokal)
-private/src/ambiance.js       dauerhafter Ambiance-Player
-src/private-style.css      Private Layer, drei Oberflächen (hell/warm/dunkel)
+private/index.html          Private Layer (eigenes Dokument)
+private/private.css         Oberfläche des Private Layers
+private/src/boot.js         Wurzelelement, Abmelden
+private/src/graph-data.js   erzeugt aus graph/ — nicht von Hand ändern
+private/src/graph-core.js   Graph: Modell, Kanten, Suche
+private/src/graph-view.js   Graph: Darstellung, Detailfläche
+private/src/lern-data.js    Lernfelder 1–5: Themen, Flashcards, Quiz
+private/src/progress.js     Lernfortschritt (lokal)
+private/src/news.js         gemeinsame Quelle für beide Nachrichtenflächen
+private/src/widgets.js      Kalender, Tag/Jahr, Motivation, Wetter, Nachrichten
+private/src/v2.js           Punchy, Wetter-Ansicht, Nachrichten-Ansicht
+private/src/v2-shell.js     Router, Dashboard, Pomodoro, Ambiance, Einstellungen
+private/src/practice.js     Flashcards, Quiz, Klausur
 
-worker/index.ts            Zugang, Sicherheits-Header, API-Proxys
-wrangler.jsonc             Cloudflare-Konfiguration
-public/                    Bilder, Schriften, robots.txt, sitemap.xml
+graph/                      Wissens-Vault als Markdown (siehe unten)
+scripts/build-graph.mjs     graph/ → graph/META/graph.json + graph-data.js
+
+worker/index.ts             Zugang, Sicherheits-Header, API-Proxys
+wrangler.jsonc              Cloudflare-Konfiguration
+public/                     Bilder, Schriften, robots.txt, sitemap.xml, og.png
 ```
+
+## Der Wissensgraph ist ein Ordner
+
+`graph/` ist ein Markdown-Vault im Obsidian-Stil: eine Datei je Notiz,
+YAML-Frontmatter oben, Fliesstext darunter. Damit lässt sich der Bestand
+mit jedem Editor, mit Obsidian und maschinell lesen — auch ausserhalb
+dieser Seite.
+
+```
+graph/RAW/     alles Neue kommt hier rein, ungeordnet
+graph/SORT/    sortierter Bestand, Unterordner frei erweiterbar
+graph/META/    schema.md (Format), activity.json (Protokoll),
+               graph.json (erzeugt)
+```
+
+`npm run graph` liest beide Stufen, prüft Frontmatter und Verweise und
+schreibt `graph/META/graph.json` sowie `private/src/graph-data.js`. Der
+Build ruft das automatisch auf. Eine Notiz von `RAW/` nach `SORT/` zu
+verschieben ändert ihren Pfad in der Ansicht nicht — Verweise bleiben
+darum beim Sortieren heil.
+
+Details und das Feldschema stehen in [`graph/README.md`](graph/README.md).
+
+> **Dieses Repository ist öffentlich.** Der Worker schützt den Graphen im
+> Browser, GitHub zeigt `graph/` aber jedem. Was dort steht, ist damit
+> veröffentlicht. `graph/README.md` nennt drei Wege, das zu ändern.
 
 ## Inhalte der Lernecke
 
@@ -74,7 +107,7 @@ lassen sich im Quiz nicht darstellen — sie sind als zusätzliche Flashcards
 
 Der Fortschritt ergibt sich aus der tatsächlichen Nutzung (gewusste Karten,
 richtige Antworten) und liegt im `localStorage` — er verlässt das Gerät
-nicht. Ebenso der angezeigte Name und die Oberflächen­einstellungen.
+nicht. Ebenso die Oberflächeneinstellungen.
 
 ## Entwickeln
 
@@ -82,21 +115,24 @@ nicht. Ebenso der angezeigte Name und die Oberflächen­einstellungen.
 npm install
 npm run dev        # nur statische Seiten
 npm run cf:dev     # mit Worker (Login/APIs), DEV_BYPASS aktiv
+npm run graph      # Vault neu einlesen
 npm run build
 ```
 
 ## Bekannte Grenzen
 
-- **Marco (K.I.)** ist eine gestaltete Platzhalterkarte ohne Funktion — das
-  Eingabefeld ist deaktiviert und die Karte sagt das auch.
-- **Kundenlogos**: gezeigt werden Wortmarken. Fremde Logos gehören ihren
-  Inhabern und werden hier nicht nachgebaut; wer sie zeigen darf, legt sie
-  unter `public/images/brands/<slug>.svg` ab und trägt den Slug in
-  `BRAND_LOGOS` ein (siehe `index.html`).
-- **Kontaktformular** öffnet das Mailprogramm mit vorbereiteter Nachricht.
-  Es gibt keinen Server, der Anfragen speichert — bewusst, das erspart eine
-  Auftragsverarbeitung. Für echten Serverversand genügt es, `send()` in
-  `src/contact.js` zu ersetzen.
+- **Punchy (K.I.)** ist eine gestaltete Fläche mit aufgezeichneten
+  Verläufen, kein angebundenes Modell — das Eingabefeld ist deaktiviert und
+  die Fläche sagt das auch.
+- **Kundenlogos**: gezeigt werden Wortmarken (`BRANDS` in `src/shell.js`).
+  Fremde Logos gehören ihren Inhabern und werden hier nicht nachgebaut.
+- **Kontaktformular** (`src/motion.js`, Abschnitt 11) prüft die Eingaben und
+  öffnet dann das Mailprogramm mit fertiger Nachricht. Es gibt keinen Server,
+  der Anfragen entgegennimmt oder speichert — bewusst, das erspart eine
+  Auftragsverarbeitung. Die Lieferung täuschte an dieser Stelle einen
+  Versand nur vor; das ist ersetzt.
 - **Wetter und Nachrichten** kommen live über den Worker (Open-Meteo,
-  tagesschau-RSS). Schlägt der Abruf fehl, sagt die Karte das, statt alte
-  oder erfundene Werte zu zeigen.
+  tagesschau-RSS). Schlägt der Abruf fehl, sagen Karte und Ansicht das,
+  statt alte oder erfundene Werte zu zeigen.
+- **Impressum und Datenschutz** enthalten noch Platzhalter (gelb markiert,
+  `<mark class="todo">`). Siehe Checkliste in DEPLOY.md.

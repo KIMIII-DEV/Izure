@@ -1,10 +1,22 @@
-# izu-re.com
 User-agent: *
 Allow: /
-# Der private Layer ist serverseitig gesperrt (Login) und gehört nicht in den Index.
+
+# Kein Zugang zum privaten Bereich
 Disallow: /private
 Disallow: /private/
-Disallow: /auth/
 Disallow: /api/
+
+# KI-Crawler, die Inhalte zum Training einsammeln
+User-agent: GPTBot
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: ClaudeBot
+Disallow: /
+
+User-agent: Google-Extended
+Disallow: /
 
 Sitemap: https://izu-re.com/sitemap.xml

@@ -1,0 +1,39 @@
+[
+ {
+  "kind": "node",
+  "target": "politik-interesse",
+  "reason": "Nachrichtenkarte an sechs Tagen in Folge geöffnet — Interesse als eigener Node angelegt.",
+  "at": "2026-09-07T09:12:00Z"
+ },
+ {
+  "kind": "edge",
+  "target": "fokus-morgens",
+  "reason": "Timer-Läufe vor 11 Uhr sind im Schnitt doppelt so lang. Kante zu „Lernen“ ergänzt.",
+  "at": "2026-09-06T18:41:00Z"
+ },
+ {
+  "kind": "update",
+  "target": "interessenprofil",
+  "reason": "Gewichtung neu berechnet, Krafttraining stärker, Confidence auf 0.61 angehoben.",
+  "at": "2026-09-06T07:03:00Z"
+ },
+ {
+  "kind": "edge",
+  "target": "schlafrhythmus",
+  "reason": "Widerspruch zur Notiz „Nachtlernen“ erkannt. Konflikt markiert, keine Version verworfen.",
+  "at": "2026-09-06T06:58:00Z"
+ },
+ {
+  "kind": "node",
+  "target": "aufgabe-lf03",
+  "reason": "Fortschritt in Lernfeld 03 seit acht Tagen unverändert — Aufgabe abgeleitet.",
+  "at": "2026-09-05T20:15:00Z"
+ },
+ {
+  "kind": "update",
+  "external": true,
+  "target": "lernplattform",
+  "reason": "Repo-Sync: Beschreibung an aktuellen Stand des Deploys angepasst.",
+  "at": "2026-09-05T11:27:00Z"
+ }
+]

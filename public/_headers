@@ -1,0 +1,30 @@
+# Ergänzende Header für die statische Auslieferung.
+#
+# Die Content-Security-Policy steht hier bewusst NICHT: der Worker setzt sie
+# pro Auslieferung mit einem frischen Nonce (worker/index.ts, csp()), und
+# `run_worker_first: true` führt jede Anfrage über ihn. Eine zweite,
+# statische CSP an dieser Stelle wäre entweder schwächer (sie bräuchte
+# 'unsafe-inline' statt des Nonce) oder sie widerspräche der Policy des
+# Workers — etwa beim frame-src der Ambiance-Einbettung.
+#
+# Was hier steht, ist das Netz darunter: Header, die auch dann gelten, wenn
+# eine Datei einmal am Worker vorbei ausgeliefert wird.
+
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: geolocation=(), camera=(), microphone=(), payment=(), usb=(), interest-cohort=()
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Resource-Policy: same-origin
+  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+
+/private/*
+  X-Robots-Tag: noindex, nofollow, noarchive
+  Cache-Control: private, no-store
+
+/index.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+/og.png
+  Cache-Control: public, max-age=31536000, immutable

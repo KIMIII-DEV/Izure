@@ -1,25 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Nur öffentliche Seiten. /private/ ist serverseitig gesperrt und gehört
-     nicht in den Index — siehe robots.txt. -->
+<!-- Eine Seite, eine URL. Datenschutz, Nutzungsbedingungen und Impressum
+     sind Abschnitte derselben Seite (#privacy, #terms, #imprint) — Fragmente
+     sind keine eigenen URLs und gehören nach der Sitemap-Spezifikation nicht
+     hierher. /private/ fehlt mit Absicht: dort kommt ohne Anmeldung niemand
+     hin, und indexiert werden soll es ohnehin nicht. -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://izu-re.com/</loc>
+    <lastmod>2026-09-18</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
-  </url>
-  <url>
-    <loc>https://izu-re.com/privacy</loc>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
-  </url>
-  <url>
-    <loc>https://izu-re.com/terms</loc>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
-  </url>
-  <url>
-    <loc>https://izu-re.com/imprint</loc>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
   </url>
 </urlset>

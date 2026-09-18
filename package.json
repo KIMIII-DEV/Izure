@@ -5,11 +5,12 @@
   "type": "module",
   "description": "Izuré — public layer (portfolio) and private layer (dashboard), served by a Cloudflare Worker.",
   "scripts": {
-    "dev": "vite --host",
-    "build": "vite build",
+    "graph": "node scripts/build-graph.mjs",
+    "dev": "npm run graph && vite --host",
+    "build": "npm run graph && vite build",
     "preview": "vite preview",
-    "cf:dev": "vite build && wrangler dev --var DEV_BYPASS:1",
-    "cf:deploy": "vite build && wrangler deploy"
+    "cf:dev": "npm run build && wrangler dev --var DEV_BYPASS:1",
+    "cf:deploy": "npm run build && wrangler deploy"
   },
   "devDependencies": {
     "vite": "^7.1.7",

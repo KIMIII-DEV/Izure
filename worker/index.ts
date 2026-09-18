@@ -158,7 +158,7 @@ async function weather(): Promise<Response> {
     `https://api.open-meteo.com/v1/forecast?latitude=${HAMBURG.lat}&longitude=${HAMBURG.lon}` +
     '&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m,precipitation' +
     '&hourly=temperature_2m,weather_code,precipitation_probability' +
-    '&daily=weather_code,temperature_2m_max,temperature_2m_min,uv_index_max,precipitation_probability_max' +
+    '&daily=weather_code,temperature_2m_max,temperature_2m_min,uv_index_max,precipitation_probability_max,sunrise,sunset' +
     '&timezone=Europe%2FBerlin&forecast_days=6';
   const upstream = await fetch(url, { cf: { cacheTtl: 600, cacheEverything: true } });
   if (!upstream.ok) return Response.json({ error: 'weather upstream failed' }, { status: 502, headers: NO_STORE });
@@ -166,24 +166,43 @@ async function weather(): Promise<Response> {
 }
 
 // ---------- Nachrichten (tagesschau-RSS → JSON) ----------
+/* Die vier Rubriken des Privat Layers auf die Ressort-Feeds der tagesschau.
+   ALL ist die Rückfallebene: ändert die tagesschau einen Ressortpfad, käme
+   sonst eine leere Nachrichtenkarte heraus. Lieber echte Meldungen aus dem
+   Hauptfeed als eine leere Fläche. */
+const ALL_FEED = 'https://www.tagesschau.de/index~rss2.xml';
 const FEEDS: Record<string, string> = {
-  welt: 'https://www.tagesschau.de/xml/rss2_ausland',
-  politik: 'https://www.tagesschau.de/xml/rss2_inland',
+  welt: 'https://www.tagesschau.de/ausland/index~rss2.xml',
+  politik: 'https://www.tagesschau.de/inland/index~rss2.xml',
   wirtschaft: 'https://www.tagesschau.de/wirtschaft/index~rss2.xml',
   technik: 'https://www.tagesschau.de/thema/digitales/index~rss2.xml',
 };
 
+/* Benannte Entitäten, die in deutschsprachigen Feeds tatsächlich vorkommen.
+   Ohne sie stünde im Titel wörtlich `&ndash;` statt eines Gedankenstrichs. */
+const NAMED: Record<string, string> = {
+  lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ', amp: '&',
+  ndash: '–', mdash: '—', laquo: '«', raquo: '»',
+  bdquo: '„', ldquo: '“', rdquo: '”', sbquo: '‚', lsquo: '‘', rsquo: '’',
+  hellip: '…', euro: '€', szlig: 'ß', deg: '°', shy: '',
+  auml: 'ä', ouml: 'ö', uuml: 'ü', Auml: 'Ä', Ouml: 'Ö', Uuml: 'Ü',
+};
+
 function decodeEntities(s: string): string {
-  return s
-    .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1')
-    .replace(/<[^>]+>/g, '')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&#0?39;|&apos;/g, "'")
-    .replace(/&nbsp;/g, ' ')
-    .replace(/&amp;/g, '&')
-    .trim();
+  return (
+    s
+      .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1')
+      // Markup entfernen, bevor &lt; zu < wird — sonst würde ein im Feed
+      // maskiertes <b> hier zu echtem Markup und ginge als HTML weiter.
+      .replace(/<[^>]+>/g, '')
+      .replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCodePoint(parseInt(h, 16)))
+      .replace(/&#(\d+);/g, (_, d) => String.fromCodePoint(parseInt(d, 10)))
+      // &amp; zuletzt, damit aus &amp;lt; nicht doch noch ein < wird.
+      .replace(/&([a-z]+);/gi, (m, n) => (n in NAMED && n !== 'amp' ? NAMED[n] : m))
+      .replace(/&amp;/g, '&')
+      .replace(/\s+/g, ' ')
+      .trim()
+  );
 }
 
 function pickTag(item: string, tag: string): string {
@@ -191,21 +210,46 @@ function pickTag(item: string, tag: string): string {
   return m ? decodeEntities(m[1]) : '';
 }
 
-async function news(topic: string): Promise<Response> {
-  const feed = FEEDS[topic] || FEEDS.welt;
-  const upstream = await fetch(feed, {
-    headers: { 'user-agent': 'izure-privat-layer/1.0 (+https://izu-re.com)' },
-    cf: { cacheTtl: 600, cacheEverything: true },
-  });
-  if (!upstream.ok) return Response.json({ error: 'news upstream failed' }, { status: 502, headers: NO_STORE });
-  const xml = await upstream.text();
-  const items = [...xml.matchAll(/<item[\s\S]*?<\/item>/g)].slice(0, 8).map((m) => ({
+function parseItems(xml: string) {
+  return [...xml.matchAll(/<item[\s\S]*?<\/item>/g)].slice(0, 12).map((m) => ({
     title: pickTag(m[0], 'title'),
     summary: pickTag(m[0], 'description'),
     link: pickTag(m[0], 'link'),
     date: pickTag(m[0], 'pubDate'),
   }));
-  return Response.json({ topic, source: 'tagesschau.de', items }, { headers: { 'cache-control': 'public, max-age=600' } });
+}
+
+async function fetchFeed(feed: string): Promise<string | null> {
+  const upstream = await fetch(feed, {
+    headers: { 'user-agent': 'izure-privat-layer/1.0 (+https://izu-re.com)' },
+    cf: { cacheTtl: 600, cacheEverything: true },
+  });
+  return upstream.ok ? await upstream.text() : null;
+}
+
+async function news(topic: string): Promise<Response> {
+  const wanted = topic in FEEDS ? topic : 'welt';
+  let items = [];
+  let fellBack = false;
+
+  const xml = await fetchFeed(FEEDS[wanted]);
+  if (xml) items = parseItems(xml);
+
+  // Ressort-Feed weg oder leer: lieber den Hauptfeed als eine leere Karte.
+  if (!items.length) {
+    const alt = await fetchFeed(ALL_FEED);
+    if (alt) {
+      items = parseItems(alt);
+      fellBack = true;
+    }
+  }
+
+  if (!items.length) return Response.json({ error: 'news upstream failed' }, { status: 502, headers: NO_STORE });
+
+  return Response.json(
+    { topic: wanted, source: 'tagesschau.de', fallback: fellBack, fetched: new Date().toISOString(), items },
+    { headers: { 'cache-control': 'public, max-age=600' } }
+  );
 }
 
 // ---------- Sicherheits-Header ----------
