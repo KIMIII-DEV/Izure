@@ -61,3 +61,100 @@ grid-template-areas:"now hours hours days" "now m1 m2 days" "now m3 m4 days"}#pv
    `fill:none` würde in SVG nicht treffen — daher volltransparente Füllung. */
 #pv .mc-node .hit{fill:rgba(0,0,0,0)}
 #pv .mc-node:hover .nm{fill:var(--blue)}
+
+/* ══ Lernecke · die neuen Aufgabentypen ══════════════════════════════════
+   Nichts an der Gestaltung ändert sich: Farben, Radien, Schriften und
+   Abstände kommen aus denselben Tokens wie der Rest des Private Layers.
+   Ergänzt wird nur, was es bisher nicht gab — Lückentext, freie Eingabe,
+   Reihenfolge, Zuordnung und die Selbsteinschätzung.
+   Grün ist dasselbe #199E3B wie bei .opt.right, Rot dasselbe var(--red). */
+
+/* Kopfzeile der Aufgabe — gleiche Optik wie die Marken in .lcard .tagrow */
+#pv .qtags{display:flex;align-items:center;gap:6px;flex-wrap:wrap;flex:none}
+#pv .qtags i{font-style:normal;font:400 11px/1 var(--sg);color:var(--gray);border:1px solid var(--hair);border-radius:80px;padding:5px 9px;white-space:nowrap}
+#pv .qtags i.alt{color:var(--gray2);border-style:dashed;max-width:46%;overflow:hidden;text-overflow:ellipsis}
+#pv .qtags .sc{margin-left:auto;white-space:nowrap}
+#pv .qsub{font:400 12.5px/1.5 var(--sg);color:var(--gray);margin-top:-4px;text-wrap:pretty}
+#pv .expl .srcref{display:block;margin-top:6px;font:400 10.5px/1.4 ui-monospace,Menlo,monospace;color:var(--gray2);font-style:normal}
+#pv .expl.show{max-height:200px}
+
+/* Mehrfachauswahl: eckige Marke statt runder, damit man ohne Text sieht,
+   dass hier mehrere Antworten möglich sind. */
+#pv .opt.box .k{border-radius:5px}
+
+/* Wahr / Falsch nebeneinander — zwei Optionen brauchen keine Liste. */
+#pv .tfopts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+/* Eingabefelder in der Form der bestehenden .mask input */
+#pv .gapsel,#pv .gapin,#pv .typein,#pv .msel{
+  font:400 14px/1.4 var(--sg);color:var(--tx);background:var(--fa);
+  border:1px solid var(--hair);border-radius:9px;padding:8px 11px;
+  transition:border-color .22s ease,background .22s ease}
+#pv .gapsel:focus,#pv .gapin:focus,#pv .typein:focus,#pv .msel:focus{outline:none;border-color:var(--blue);background:var(--card)}
+#pv .gapsel:disabled,#pv .gapin:disabled,#pv .typein:disabled,#pv .msel:disabled{cursor:default;opacity:1}
+
+/* Lückentext */
+#pv .clz{line-height:2.6;font:400 15px/2.6 var(--sg);color:var(--tx);text-wrap:pretty}
+#pv .clz .gapsel,#pv .clz .gapin{display:inline-block;margin:0 3px;padding:5px 9px;min-width:104px}
+#pv .clz .gapin{min-width:82px}
+
+/* Richtig / falsch an einem Eingabefeld — dieselben Farben wie bei .opt */
+#pv .gok{border-color:#199E3B;background:color-mix(in srgb,#199E3B 8%,transparent)}
+#pv .gno{border-color:var(--red);background:color-mix(in srgb,var(--red) 8%,transparent)}
+#pv .gfix{display:inline-block;margin-left:6px;padding:3px 9px;border-radius:7px;
+  font:400 12.5px/1.4 var(--sg);color:#147F30;background:color-mix(in srgb,#199E3B 12%,transparent)}
+
+/* Freie Eingabe und Rechnen */
+#pv .typerow{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+#pv .typein{flex:1 1 220px;min-width:0;padding:11px 13px;font-size:15px}
+#pv .typerow .unit{white-space:nowrap}
+
+/* Reihenfolge */
+#pv .ordslot{list-style:none;counter-reset:o;display:flex;flex-direction:column;gap:6px;min-height:6px;padding:0;margin:0}
+#pv .ordslot .oli{counter-increment:o;position:relative;cursor:pointer;
+  padding:10px 14px 10px 40px;border:1px solid var(--hair);border-radius:10px;
+  background:var(--card);font:400 14px/1.35 var(--sg);color:var(--tx);
+  transition:border-color .22s ease,background .22s ease}
+#pv .ordslot .oli:hover{border-color:var(--blue)}
+#pv .ordslot.lock .oli{cursor:default}
+#pv .ordslot.lock .oli:hover{border-color:var(--hair)}
+#pv .ordslot .oli::before{content:counter(o);position:absolute;left:14px;top:50%;transform:translateY(-50%);
+  font:400 12px/1 ui-monospace,Menlo,monospace;color:var(--gray2);font-variant-numeric:tabular-nums}
+#pv .ordpool{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
+#pv .chip.ord{height:auto;padding:8px 13px;border-style:dashed;font-size:13px;line-height:1.3;text-align:left}
+#pv .chip.ord:disabled{opacity:.28;cursor:default;color:var(--gray2);border-color:var(--hair)}
+#pv .chip.ord:disabled:hover{color:var(--gray2);border-color:var(--hair)}
+#pv .ordsol{margin:9px 0 0;padding-left:22px;font:400 13px/1.7 var(--sg);color:var(--gray)}
+
+/* Zuordnung */
+#pv .matchgrid{display:flex;flex-direction:column;gap:8px}
+#pv .mrow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;
+  padding:8px 12px;border:1px solid var(--hair);border-radius:10px;background:var(--fa)}
+#pv .mrow .ml{font:400 14px/1.4 var(--sg);color:var(--tx);text-wrap:pretty}
+#pv .mrow .msel{min-width:168px;max-width:100%;background:var(--card)}
+#pv .mrow .gfix{grid-column:1/-1;margin-left:0}
+
+/* Selbsteinschätzung — nutzt die bestehende .pill */
+#pv .confrow{display:flex;align-items:center;gap:7px;flex-wrap:wrap;flex:none}
+#pv .confrow .mono{margin-right:2px}
+#pv .confrow.lock{opacity:.45;pointer-events:none}
+
+/* Poolbalken in der Auswertung */
+#pv .poolbar{width:100%;max-width:440px;margin-top:4px}
+#pv .pbars{display:flex;flex-direction:column;gap:6px;margin:10px 0 8px}
+#pv .pseg{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center}
+#pv .pseg i{display:block;height:5px;border-radius:5px;background:var(--e4);position:relative;overflow:hidden}
+#pv .pseg i::after{content:"";position:absolute;inset:0 auto 0 0;width:var(--w);border-radius:5px;background:var(--gray2);transition:width .8s var(--eo)}
+#pv .pseg.ok i::after{background:#199E3B}
+#pv .pseg.due i::after{background:#C9A227}
+#pv .pseg.new i::after{background:var(--gray2)}
+#pv .pseg.bad i::after{background:var(--red)}
+#pv .pseg span{white-space:nowrap}
+#pv .warnline{color:var(--red)}
+
+@media (max-width:640px),(orientation:portrait) and (max-width:1100px){
+  #pv .tfopts{grid-template-columns:1fr}
+  #pv .mrow{grid-template-columns:1fr}
+  #pv .mrow .msel{width:100%;min-width:0}
+  #pv .qtags i.alt{max-width:100%}
+}

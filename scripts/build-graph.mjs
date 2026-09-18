@@ -207,7 +207,9 @@ const activityPath = join(VAULT, 'META', 'activity.json');
 const activity = existsSync(activityPath) ? JSON.parse(readFileSync(activityPath, 'utf8')) : [];
 
 const graph = {
-  generated: new Date().toISOString(),
+  // Nur das Datum, keine Uhrzeit: mit voller Zeitmarke änderte sich die
+  // Datei bei jedem Build, und jeder Commit trüge eine Scheinänderung.
+  generated: new Date().toISOString().slice(0, 10),
   counts: {
     notes: files.length,
     links: links.length,

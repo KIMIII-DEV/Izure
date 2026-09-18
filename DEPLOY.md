@@ -115,8 +115,13 @@ npx wrangler dev --port 8787 --var DEV_BYPASS:0 --var TOTP_SECRET:<dein-test-sec
 ```
 
 Wichtig: `wrangler dev` liefert aus `dist/`, nicht aus den Quelldateien.
-Nach jeder Änderung an `src/`, `private/src/` oder `graph/` erst
-`npm run build`, sonst testet man den alten Stand.
+Nach jeder Änderung an `src/`, `private/src/`, `content/lernfelder/` oder
+`graph/` erst `npm run build`, sonst testet man den alten Stand.
+
+`npm run build` ruft dabei `npm run lern` und `npm run graph` mit auf —
+Lerninhalte und Wissensgraph werden also immer frisch erzeugt und gegen ihr
+Schema geprüft. Schlägt eine Prüfung fehl, bricht der Build ab, bevor etwas
+Fehlerhaftes deployt wird.
 
 Wetter und Nachrichten brauchen ausgehende Verbindungen zu
 `api.open-meteo.com` und `www.tagesschau.de`. Sind die im Netz gesperrt,
@@ -154,5 +159,6 @@ Fehler im Code.
       Anbieter erst nach „Verstanden“. Die Datenschutzerklärung beschreibt
       den Einwilligungsvorbehalt schon, sie muss dafür nicht geändert werden.
 - [ ] Kundenliste prüfen: `BRANDS` in `src/shell.js`
+- [ ] `npm run lern` und `npm run test:learn` laufen durch
 - [ ] `graph/` durchsehen — das Repository ist öffentlich, alles dort ist
       damit veröffentlicht (siehe `graph/README.md`)

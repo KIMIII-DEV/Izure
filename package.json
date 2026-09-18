@@ -6,11 +6,13 @@
   "description": "Izuré — public layer (portfolio) and private layer (dashboard), served by a Cloudflare Worker.",
   "scripts": {
     "graph": "node scripts/build-graph.mjs",
-    "dev": "npm run graph && vite --host",
-    "build": "npm run graph && vite build",
+    "dev": "npm run lern && npm run graph && vite --host",
+    "build": "npm run lern && npm run graph && vite build",
     "preview": "vite preview",
     "cf:dev": "npm run build && wrangler dev --var DEV_BYPASS:1",
-    "cf:deploy": "npm run build && wrangler deploy"
+    "cf:deploy": "npm run build && wrangler deploy",
+    "lern": "node scripts/build-lernfelder.mjs",
+    "test:learn": "node scripts/test-learn.mjs"
   },
   "devDependencies": {
     "vite": "^7.1.7",

@@ -80,13 +80,13 @@ overall=Math.round(LF.reduce(function(a,l){return a+l.pct},0)/(LF.length||1));
 $('#lfrows').innerHTML=LF.map(function(l,i){
   return '<button class="lfr'+(l.pct===100?' done':'')+'" data-lf="'+i+'">'+
     '<span class="cd">'+l.code+'</span>'+
-    '<span class="nm">'+l.name+'<small>'+l.cards.length+' Karten · '+l.quiz.length+' Fragen · '+l.state+'</small></span>'+
+    '<span class="nm">'+l.name+'<small>'+l.cards.length+' Karten · '+l.quiz.length+' Aufgaben · '+l.state+'</small></span>'+
     '<span class="pr"><span class="t"><i data-w="'+l.pct+'"></i></span><em>'+l.pct+'</em></span>'+
     '<svg class="go" width="17" height="17" viewBox="0 0 24 24"><use href="#i-arr"/></svg></button>';
 }).join('')+
 '<button class="lfr soon" disabled><span class="cd">'+nextRange()+'</span><span class="nm">Weitere Lernfelder<small>folgen später</small></span><span class="pr"><span class="t"></span><em>—</em></span><svg class="go" width="17" height="17" viewBox="0 0 24 24"><use href="#i-arr"/></svg></button>';
 $('#lfmeta').textContent=LF.length+' Felder aktiv';
-$('#lfsub').textContent=totCards+' Karten · '+totQuiz+' Quizfragen';
+$('#lfsub').textContent=totCards+' Karten · '+totQuiz+' Aufgaben';
 $('#lfbar').style.width=overall+'%';
 $('#lfpct').textContent=overall+' %';
 $$('#lfrows .pr .t i').forEach(function(i){i.style.width=(i.dataset.w||0)+'%'});
@@ -168,9 +168,9 @@ function paintLern(){
       '<h3>'+l.name+'</h3>'+
       '<span class="st">'+l.state+'</span>'+
       '<span class="tagrow"><i>Flashcards</i><i>Quiz</i><i>Klausur</i></span>'+
-      '<span class="kpi"><div><b>'+l.themen.length+'</b>Themen</div><div><b>'+l.cards.length+'</b>Karten</div><div><b>'+l.quiz.length+'</b>Fragen</div></span></button>';
+      '<span class="kpi"><div><b>'+l.themen.length+'</b>Themen</div><div><b>'+l.cards.length+'</b>Karten</div><div><b>'+l.quiz.length+'</b>Aufgaben</div></span></button>';
   }).join('')+
-  '<div class="lcard soon" style="--i:'+LF.length+'"><span class="cd">Lernfeld 05—10</span><h3>Noch nicht vorhanden</h3><span class="st">wird später ergänzt</span><span class="kpi"><div><b>—</b>Themen</div><div><b>—</b>Karten</div><div><b>—</b>Fragen</div></span></div>';
+  '<div class="lcard soon" style="--i:'+LF.length+'"><span class="cd">Lernfeld 05—10</span><h3>Noch nicht vorhanden</h3><span class="st">wird später ergänzt</span><span class="kpi"><div><b>—</b>Themen</div><div><b>—</b>Karten</div><div><b>—</b>Aufgaben</div></span></div>';
   setTimeout(function(){$$('#lgrid .fgc').forEach(function(c){c.setAttribute('stroke-dashoffset',c.dataset.off)})},420);
 }
 $('#lgrid').addEventListener('click',function(e){

@@ -54,7 +54,8 @@ private/src/boot.js         Wurzelelement, Abmelden
 private/src/graph-data.js   erzeugt aus graph/ — nicht von Hand ändern
 private/src/graph-core.js   Graph: Modell, Kanten, Suche
 private/src/graph-view.js   Graph: Darstellung, Detailfläche
-private/src/lern-data.js    Lernfelder 1–5: Themen, Flashcards, Quiz
+private/src/lern-data.js    erzeugt aus content/lernfelder/ — nicht ändern
+private/src/learn.js        Lernmechanik: Auswahl, Mischung, Bewertung, Leitner
 private/src/progress.js     Lernfortschritt (lokal)
 private/src/news.js         gemeinsame Quelle für beide Nachrichtenflächen
 private/src/widgets.js      Kalender, Tag/Jahr, Motivation, Wetter, Nachrichten
@@ -62,8 +63,11 @@ private/src/v2.js           Punchy, Wetter-Ansicht, Nachrichten-Ansicht
 private/src/v2-shell.js     Router, Dashboard, Pomodoro, Ambiance, Einstellungen
 private/src/practice.js     Flashcards, Quiz, Klausur
 
+content/lernfelder/         Karten und Aufgaben als bearbeitbare Quellen
 graph/                      Wissens-Vault als Markdown (siehe unten)
+scripts/build-lernfelder.mjs  content/lernfelder/ → private/src/lern-data.js
 scripts/build-graph.mjs     graph/ → graph/META/graph.json + graph-data.js
+scripts/test-learn.mjs      Funktionstests der Lernmechanik
 
 worker/index.ts             Zugang, Sicherheits-Header, API-Proxys
 wrangler.jsonc              Cloudflare-Konfiguration
@@ -98,16 +102,47 @@ Details und das Feldschema stehen in [`graph/README.md`](graph/README.md).
 
 ## Inhalte der Lernecke
 
-Aus der Vorgängerversion übernommen: **5 Lernfelder, 108 Themen,
-528 Flashcards, 299 Quizfragen** (Kaufleute für Dialogmarketing).
+**5 Lernfelder, 108 Themen, 250 Flashcards, 606 Aufgaben** (Kaufleute für
+Dialogmarketing). Bearbeitet wird in [`content/lernfelder/`](content/lernfelder/README.md),
+gebaut mit `npm run lern`.
 
-Offene und Zuordnungsfragen der Altversion haben keine Antwortoptionen und
-lassen sich im Quiz nicht darstellen — sie sind als zusätzliche Flashcards
-übernommen, damit kein Inhalt verloren geht.
+Neun Aufgabentypen statt nur Einfachauswahl: `mc`, `multi`, `tf`, `cloze`
+(Lückentext), `type` (freie Eingabe), `calc` (Rechnen), `order`
+(Reihenfolge), `match` (Zuordnung), `odd` (Ausreißer finden). Offene und
+Zuordnungsfragen mussten früher als Flashcards mitlaufen, weil das Quiz sie
+nicht darstellen konnte — dafür gibt es jetzt eigene Typen. Das ist der
+Grund, warum die Kartenzahl von 528 auf 250 gesunken und die Aufgabenzahl
+von 299 auf 606 gestiegen ist: derselbe Stoff, in der passenden Form.
 
-Der Fortschritt ergibt sich aus der tatsächlichen Nutzung (gewusste Karten,
-richtige Antworten) und liegt im `localStorage` — er verlässt das Gerät
-nicht. Ebenso die Oberflächeneinstellungen.
+### Warum man sich hier nichts auswendig merken kann
+
+Drei Mechaniken in `private/src/learn.js`:
+
+1. **Pool-Rotation.** Eine Runde zieht 25 Aufgaben aus 107–161. Die
+   Überschneidung zweier aufeinanderfolgender Runden liegt im Test bei
+   2 bis 5 von 25.
+2. **Mischen auf drei Ebenen.** Die Auswahl ist gewichtet, die Reihenfolge
+   verschachtelt Kategorien und Typen, und die Antwortoptionen werden bei
+   *jedem* Aufruf neu gemischt — die Lösung landet über 40 Aufrufe auf allen
+   Positionen.
+3. **Zustand statt Punktestand.** Jede Aufgabe hat eine eigene Leitner-Box
+   (0/1/3/7/21/60 Tage). Sie gilt erst als gelernt, wenn sie in **drei
+   verschiedenen Sitzungen** richtig beantwortet wurde; dreimal richtig in
+   derselben Runde zählt einmal.
+
+Dazu: bis zu 40 % einer Runde sind reservierte Plätze für falsch
+beantwortete oder fällige Aufgaben — ohne diese Reservierung geht ein
+einzelner Fehler im Pool unter. Und vor dem Prüfen fragt die Oberfläche nach
+der eigenen Einschätzung (geraten / unsicher / sicher); wer „sicher" wählt
+und danebenliegt, bekommt die Aufgabe bevorzugt zurück.
+
+Der Fortschrittsbalken zeigt den Anteil der Aufgaben, die in diesem Sinne
+sitzen, gemittelt mit dem besten Kartendurchlauf. Er kann fallen. Das ist
+Absicht: ein Wert, der nur steigt, sagt nichts über den Wissensstand.
+
+Alles liegt im `localStorage` (`izure.learn.v3` für den Aufgabenzustand,
+`izure.privat.progress` für die Karten) und verlässt das Gerät nicht — ein
+Gerätewechsel bedeutet, von vorn anzufangen.
 
 ## Entwickeln
 
@@ -115,7 +150,9 @@ nicht. Ebenso die Oberflächeneinstellungen.
 npm install
 npm run dev        # nur statische Seiten
 npm run cf:dev     # mit Worker (Login/APIs), DEV_BYPASS aktiv
+npm run lern       # Karten und Aufgaben neu bauen, Schema prüfen
 npm run graph      # Vault neu einlesen
+npm run test:learn # Funktionstests der Lernmechanik
 npm run build
 ```
 
@@ -124,6 +161,9 @@ npm run build
 - **Punchy (K.I.)** ist eine gestaltete Fläche mit aufgezeichneten
   Verläufen, kein angebundenes Modell — das Eingabefeld ist deaktiviert und
   die Fläche sagt das auch.
+- **Der Prüfungszuschnitt** (Teile, Gewichtung, zugelassene Aufgabenformate)
+  ist nicht bestätigt. Die Schwierigkeitsangabe `d` je Aufgabe ist deshalb
+  gleichmäßig gestreut und nicht am echten Prüfungsprofil ausgerichtet.
 - **Kundenlogos**: gezeigt werden Wortmarken (`BRANDS` in `src/shell.js`).
   Fremde Logos gehören ihren Inhabern und werden hier nicht nachgebaut.
 - **Kontaktformular** (`src/motion.js`, Abschnitt 11) prüft die Eingaben und
