@@ -159,6 +159,6 @@ Fehler im Code.
       Anbieter erst nach „Verstanden“. Die Datenschutzerklärung beschreibt
       den Einwilligungsvorbehalt schon, sie muss dafür nicht geändert werden.
 - [ ] Kundenliste prüfen: `BRANDS` in `src/shell.js`
-- [ ] `npm run lern` und `npm run test:learn` laufen durch
+- [ ] `npm run lern` und `npm test` laufen durch
 - [ ] `graph/` durchsehen — das Repository ist öffentlich, alles dort ist
       damit veröffentlicht (siehe `graph/README.md`)

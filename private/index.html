@@ -47,6 +47,7 @@
 <button class="ric on" data-view="dash" aria-label="Dashboard"><svg width="20" height="20" viewBox="0 0 24 24"><use href="#i-deck"></use></svg><span>Dashboard</span></button>
 <button class="ric" data-view="punchy" aria-label="Punchy"><svg width="20" height="20" viewBox="0 0 24 24"><use href="#i-ai"></use></svg><span>Punchy</span></button>
 <button class="ric" data-view="lern" aria-label="Lernecke"><svg width="20" height="20" viewBox="0 0 24 24"><use href="#i-book"></use></svg><span>Lernecke</span></button>
+<button class="ric" data-view="pruefung" aria-label="Zwischenprüfung"><svg width="20" height="20" viewBox="0 0 24 24"><use href="#i-exam"></use></svg><span>Zwischenprüfung</span></button>
 <button class="ric" data-view="marco" aria-label="Wissensgraph"><svg width="20" height="20" viewBox="0 0 24 24"><use href="#i-graph"></use></svg><span>Wissensgraph</span></button>
 <button class="ric" data-view="news" aria-label="Nachrichten"><svg width="20" height="20" viewBox="0 0 24 24"><use href="#i-globe"></use></svg><span>Nachrichten</span></button>
 <button class="ric" data-view="wetter" aria-label="Wetter"><svg width="20" height="20" viewBox="0 0 24 24"><use href="#i-sun"></use></svg><span>Wetter · Hamburg</span></button>
@@ -299,6 +300,7 @@
 </div>
 <div id="clock2"><b id="ctime2">--:--</b><i id="cdate2">—</i></div>
 </header>
+<button class="zprow" id="zprow" type="button" data-view="pruefung" hidden></button>
 <div class="lgrid" id="lgrid"></div>
 </section>
 
@@ -319,7 +321,6 @@
 <div class="modes" id="modes">
 <button class="mode on" data-tab="cards"><svg width="17" height="17" viewBox="0 0 24 24"><use href="#i-cards"></use></svg><span>Flashcards<small id="mCards">—</small></span></button>
 <button class="mode" data-tab="quiz"><svg width="17" height="17" viewBox="0 0 24 24"><use href="#i-quiz"></use></svg><span>Quiz<small id="mQuiz">—</small></span></button>
-<button class="mode" data-tab="exam"><svg width="17" height="17" viewBox="0 0 24 24"><use href="#i-exam"></use></svg><span>Klausur<small id="mExam">—</small></span></button>
 </div>
 </section>
 <section class="panel" style="--i:1">
@@ -327,6 +328,19 @@
 <div id="practice" class="prwrap"></div>
 </section>
 </div>
+</section>
+
+<!-- ══ VIEW · ZWISCHENPRÜFUNG ══ -->
+<section class="view" id="v-pruefung" data-screen-label="Zwischenprüfung">
+<header class="vhead">
+<div class="hi">
+<button class="back" data-view="lern"><svg width="15" height="15" viewBox="0 0 24 24"><use href="#i-left"></use></svg>Lernecke</button>
+<h1>Zwischenprüfung</h1>
+<p class="sub" id="zpSub">—</p>
+</div>
+<div class="pomchip" id="zpClock" hidden><span class="lb">Restzeit</span><b id="zpTime">--:--</b></div>
+</header>
+<div id="zpBody" class="zpwrap"></div>
 </section>
 
 </div>
@@ -391,7 +405,6 @@
 <footer><button class="btn ghost sm" id="setreset">Zurücksetzen</button><span class="mono">Wird lokal gespeichert</span></footer>
 </aside>
 </div>
-<button class="pvback" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg>Public Layer</button>
 </div>
 
 <script type="module" src="/private/src/boot.js"></script>
@@ -405,6 +418,9 @@
 <script type="module" src="/private/src/widgets.js"></script>
 <script type="module" src="/private/src/v2.js"></script>
 <script type="module" src="/private/src/v2-shell.js"></script>
+<script type="module" src="/private/src/items.js"></script>
 <script type="module" src="/private/src/practice.js"></script>
+<script type="module" src="/private/src/pruefung.js"></script>
+<script type="module" src="/private/src/pruefung-ui.js"></script>
 </body>
 </html>

@@ -158,3 +158,244 @@ grid-template-areas:"now hours hours days" "now m1 m2 days" "now m3 m4 days"}#pv
   #pv .mrow .msel{width:100%;min-width:0}
   #pv .qtags i.alt{max-width:100%}
 }
+
+/* ══ Korrekturen ═══════════════════════════════════════════════════════════ */
+
+/* 1 · Der Seitenhintergrund im Dunkelmodus.
+   Die Farbtöne stehen auf #pv. #pv ist im Querformat aber `position:static`
+   und enthält nur fixierte Kinder — es fällt damit auf rund 100 Pixel Höhe
+   zusammen. html und body haben gar keinen Hintergrund, also lag rundherum
+   das Weiß des Browsers: an den Rändern ein Streifen, im Hochformat unter
+   dem Inhalt eine ganze Fläche. Der fixierte Überzug von #pv::before trug
+   bisher nur die beiden Farbverläufe; er bekommt jetzt auch den Grundton und
+   deckt damit das ganze Fenster. html trägt ihn zusätzlich, damit auch der
+   Bereich stimmt, den man beim Überziehen zu sehen bekommt. */
+#pv::before{background-color:var(--bg1)}
+html[data-surface]{background:#fff}
+html[data-surface="warm"]{background:#F6F2EB}
+html[data-surface="dark"]{background:#0B0B0C}
+
+/* 2 · Die Leiste gehört über die Bühne.
+   Eine spätere Regel setzt #rail, #stage und #setwrap gemeinsam auf
+   `z-index:1`, damit sie über dem Verlaufsüberzug liegen. Damit verlor die
+   Leiste aber ihren Vorrang von 30: bei gleichem z-index gewinnt das später
+   im Dokument stehende #stage, und die Beschriftung, die beim Schweben aus
+   der Leiste fährt, verschwand hinter der ersten Karte — sichtbar blieben
+   zwei Buchstaben. */
+#pv #rail{z-index:30}
+#pv #setwrap{z-index:60}
+
+/* 3 · Themen in der Lernecke ganz lesen.
+   `max-height:140px` bei `overflow:hidden` zeigte von einem 630 Pixel hohen
+   Thementext den Anfang und ließ den Rest unerreichbar — ohne Bildlauf, ohne
+   Hinweis. Statt einer festen Höhe wächst die Fläche jetzt auf ihre
+   natürliche Größe; gescrollt wird in der Themenliste, die das ohnehin kann.
+   Die Zeilenhöhe von 0fr auf 1fr ist animierbar, eine Höhe von `auto` wäre
+   es nicht. */
+#pv .th .a{max-height:none;display:grid;grid-template-rows:0fr;transition:grid-template-rows .42s var(--eo)}
+#pv .th .a > .ain{min-height:0;overflow:hidden}
+/* `.th.open .a` weiter oben ist spezifischer als `.th .a` — die feste Höhe
+   muss dort ausdrücklich zurückgenommen werden, sonst gewinnt sie wieder. */
+#pv .th.open .a{max-height:none;grid-template-rows:1fr}
+@media (prefers-reduced-motion:reduce){#pv .th .a{transition-duration:.01s}}
+
+/* 4 · Knöpfe erben die Textfarbe.
+   Ein <button> nimmt ohne eigene Farbangabe die Systemfarbe `buttontext` —
+   Schwarz. Im hellen Modus fällt das nicht auf, im dunklen stand die
+   Überschrift der Lernfeld-Kachel als schwarzer Text auf fast schwarzem
+   Grund: Kontrast 1,2 zu 1, also praktisch unsichtbar. Felder und
+   Auswahllisten haben dasselbe Problem. */
+#pv button,#pv input,#pv select,#pv textarea{color:inherit}
+
+/* 5 · Hervorhebungen im Thementext.
+   `b` wird im Akzentblau gesetzt. Das Blau ist für helle Flächen gewählt
+   (#1E4B9A) und kommt auf dunklem Grund auf 2,0 zu 1. Im Dunkelmodus eine
+   aufgehellte Variante desselben Farbtons. */
+#pv[data-surface="dark"] .th .a b,
+#pv[data-surface="dark"] .keys b,
+#pv[data-surface="dark"] .expl b{color:#7FA9EE}
+
+/* 6 · Kleine Beschriftungen lesbar machen.
+   --gray2 trug Zähler, Kartenstände und Rubriken („25 Einträge“,
+   „Karte 1 von 50“, „Kernpunkte“). Auf Weiß kam das auf 2,6 zu 1 und auf
+   dunklem Grund auf 3,7 — beides unter den 4,5, die kleiner Text braucht.
+   Der Ton bleibt derselbe, nur so weit nachgezogen, dass man ihn lesen
+   kann; die Abstufung zu --gray bleibt erhalten. */
+#pv{--gray2:#6E6E78;--gray:#6B6B70}
+#pv[data-surface="warm"]{--gray2:#726A61;--gray:#6B635B}
+#pv[data-surface="dark"]{--gray2:#9B9BA4;--gray:#AFAFB8}
+
+/* 7 · Lange Kartenfragen abrollen statt abschneiden.
+   Die Kartenseite zentriert ihren Inhalt und schnitt bei `overflow:hidden`
+   alles ab, was nicht hineinpasste — bei langen Fragen fehlten die letzten
+   Zeilen ohne jeden Hinweis. */
+/* Nicht die Kartenseite selbst rollt, sondern der Absatz darin. Die Seite
+   ist absolut positioniert und meldet als Flex-Behälter dauerhaft dreißig
+   Pixel Überhang, die es gar nicht gibt — eine Bildlaufleiste läge damit auf
+   jeder Karte, auch auf der kürzesten. Der Absatz hat weder Innenabstand
+   noch Transformation und meldet deshalb genau das, was wirklich übersteht. */
+#pv .fcf p,#pv .fcb p{max-height:100%;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:var(--e4) transparent}
+#pv .fcf p::-webkit-scrollbar,#pv .fcb p::-webkit-scrollbar{width:5px}
+#pv .fcf p::-webkit-scrollbar-thumb,#pv .fcb p::-webkit-scrollbar-thumb{background:var(--e4);border-radius:5px}
+
+/* 8 · Quellenangabe im Kartenkopf darf schrumpfen.
+   „open-meteo.com · offline“ ist länger als der Platz daneben und wurde
+   wortlos abgeschnitten. */
+#pv .chd .x{min-width:0;overflow:hidden;text-overflow:ellipsis}
+
+/* 9 · Klausur-Kennzeichnung im Thementitel.
+   Hellrosa Pille auf dunklem Grund — die einzige helle Fläche, die im
+   Dunkelmodus stehen blieb. */
+#pv[data-surface="dark"] .th .rel{background:color-mix(in srgb,var(--red) 22%,transparent);color:#F3A79D}
+
+/* 10 · Akzentfarben als Text auf dunklem Grund.
+   Blau und Rot sind für helle Flächen gewählt. Als Fläche funktionieren sie
+   auch im Dunkeln, als Text nicht: die große Fortschrittszahl kam auf 2,0
+   zu 1, die rote Kennzahl auf 3,4. Deshalb zwei abgeleitete Töne, die den
+   vom Nutzer gewählten Akzent behalten und nur aufgehellt werden — Flächen
+   und Ränder bleiben unverändert, damit sich nichts am Erscheinungsbild
+   verschiebt. */
+#pv{--blue-tx:var(--blue);--red-tx:var(--red)}
+#pv[data-surface="dark"]{--blue-tx:color-mix(in srgb,var(--blue) 50%,#fff);--red-tx:color-mix(in srgb,var(--red) 52%,#fff)}
+#pv[data-surface="dark"] .ov b,
+#pv[data-surface="dark"] .h28,
+#pv[data-surface="dark"] .h34,
+#pv[data-surface="dark"] .h112,
+#pv[data-surface="dark"] .field label,
+#pv[data-surface="dark"] .mmeter .mm b,
+#pv[data-surface="dark"] .lcard .ring em{color:var(--blue-tx)}
+#pv[data-surface="dark"] .mo-l b,
+#pv[data-surface="dark"] .rv small.n,
+#pv[data-surface="dark"] .qzfoot .nokc,
+#pv[data-surface="dark"] .nokc,
+#pv[data-surface="dark"] .warnline,
+#pv[data-surface="dark"] .exhd b.warn{color:var(--red-tx)}
+
+/* 11 · Kalenderblatt vollständig zeigen.
+   Sechs Zeilen quadratischer Felder passen nicht in die Karte; vierzig
+   Pixel — in manchen Monaten die letzte Zeile — waren abgeschnitten. Die
+   Felder dürfen jetzt flacher werden, statt quadratisch zu bleiben. */
+#pv .w-cal .cal{align-content:stretch}
+#pv .w-cal .cal i{aspect-ratio:auto;min-height:0;padding:2px 0}
+
+/* 12 · Kartenseiten rollen nur senkrecht. */
+#pv .fcf,#pv .fcb{overflow:hidden}
+
+/* 13 · Nachzügler, die spezifischere Regeln überstimmen mussten.
+   `#pv #thlist .a b` trägt zwei IDs; eine Regel mit nur einer ID kommt
+   dagegen nicht an, egal wie viele Klassen sie mitbringt. */
+#pv[data-surface="dark"] #thlist .a b{color:var(--blue-tx)}
+#pv[data-surface="dark"]{--pv-conf:color-mix(in srgb,var(--red) 52%,#fff)}
+
+/* 14 · Wochentagskürzel im Kalender.
+   Einzelne Buchstaben auf der leicht getönten Kartenfläche kamen auf 4,4
+   zu 1. Eine Stufe dunkler reicht. */
+#pv .cal em{color:var(--gray)}
+
+/* ══ Zwischenprüfung ═══════════════════════════════════════════════════════
+   Dieselben Bausteine wie überall im Private Layer: .card, .chd, .btn,
+   .pill, .exdots, .ring2, .pseg. Neu ist nur, was es bisher nicht gab —
+   die Formatwahl, die Themengebietsliste und der Verlauf. */
+
+#pv .modes{grid-template-columns:repeat(2,1fr)}
+#pv .zpwrap{flex:1;min-height:0;display:flex;flex-direction:column}
+#pv .zpgrid{flex:1;min-height:0;display:grid;gap:16px;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);
+  grid-template-rows:minmax(0,1fr) minmax(0,1fr);grid-template-areas:"start tg" "start hist"}
+#pv .zpgrid > .card:nth-child(1){grid-area:start}
+#pv .zpgrid > .card:nth-child(2){grid-area:tg}
+#pv .zpgrid > .card:nth-child(3){grid-area:hist}
+#pv .zpgrid.res{grid-template-columns:minmax(0,.8fr) minmax(0,.7fr) minmax(0,1.1fr);
+  grid-template-rows:minmax(0,1fr);grid-template-areas:"start tg hist"}
+
+/* Formatwahl */
+#pv .zpfmt{display:flex;flex-direction:column;gap:8px;flex:none}
+#pv .zpf{display:block;width:100%;text-align:left;padding:12px 14px;border:1px solid var(--hair);
+  border-radius:12px;background:var(--card);cursor:pointer;transition:border-color .22s,background .22s}
+#pv .zpf:hover{border-color:var(--blue)}
+#pv .zpf.on{border-color:var(--blue);background:color-mix(in srgb,var(--blue) 7%,transparent)}
+#pv .zpf b{display:block;font:450 15px/1.3 var(--sg);color:var(--tx)}
+#pv .zpf span{display:block;margin-top:3px;font:400 12.5px/1.45 var(--sg);color:var(--gray)}
+#pv .zpnote{margin-top:12px;font:400 12.5px/1.6 var(--sg);color:var(--gray);text-wrap:pretty}
+#pv .zpnote b{color:var(--tx);font-weight:500}
+
+/* Themengebiete */
+#pv .zptg{flex:1;min-height:0;display:flex;flex-direction:column;gap:2px;overflow-y:auto;
+  scrollbar-width:thin;scrollbar-color:var(--e4) transparent}
+#pv .zptgr{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:10px;align-items:center;
+  padding:9px 6px;border-top:1px solid var(--hair)}
+#pv .zptgr:first-child{border-top:0}
+#pv .zptgr .nn{font:400 11px/1 var(--mo);color:var(--gray2)}
+#pv .zptgr b{display:block;font:400 13.5px/1.35 var(--sg);color:var(--tx);text-wrap:pretty}
+#pv .zptgr .mono{display:block;margin-top:2px}
+#pv .zptgr .zpn{font:450 15px/1 var(--sg);color:var(--tx);font-variant-numeric:tabular-nums}
+
+/* Verlauf */
+#pv .zphist{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;
+  scrollbar-width:thin;scrollbar-color:var(--e4) transparent}
+#pv .zphr{display:grid;grid-template-columns:auto auto auto minmax(0,1fr) auto;gap:10px;align-items:baseline;
+  padding:9px 4px;border-top:1px solid var(--hair)}
+#pv .zphr:first-child{border-top:0}
+#pv .zphr .zpp{font:450 14px/1 var(--sg);color:var(--tx);font-variant-numeric:tabular-nums}
+#pv .zphr .zpq{font:400 12.5px/1 var(--sg);color:var(--gray);font-variant-numeric:tabular-nums}
+#pv .zphr .zpnote{margin:0;font-size:12px}
+#pv .zphr .zpnote.gut{color:#199E3B}
+#pv .zphr .zpnote.schwach{color:var(--red-tx,var(--red))}
+
+/* Laufender Bogen */
+#pv .zprun{flex:1;min-height:0;display:flex;flex-direction:column;gap:12px}
+#pv .zptop{display:flex;align-items:flex-start;gap:12px;flex:none}
+#pv .zptop .exdots{flex:1}
+#pv .zprun .qz{flex:1;min-height:0;background:var(--card);border:1px solid var(--hair);
+  border-radius:var(--r);box-shadow:var(--sh);padding:16px 18px}
+#pv .exd.mark{border-color:var(--blue);color:var(--blue);font-weight:600}
+#pv .exd.mark::after{content:"";position:absolute;right:3px;top:3px;width:4px;height:4px;border-radius:50%;background:var(--blue)}
+#pv .exd{position:relative}
+#pv #zpClock b.warn{color:var(--red-tx,var(--red))}
+
+/* Auswertung */
+#pv .zpres .exsum{margin-top:4px}
+#pv .zpweak{display:flex;flex-direction:column;gap:2px;margin-top:8px}
+#pv .zpwr{display:flex;align-items:baseline;justify-content:space-between;gap:12px;
+  padding:8px 4px;border-top:1px solid var(--hair);font:400 13.5px/1.4 var(--sg);color:var(--tx)}
+#pv .zpwr:first-child{border-top:0}
+#pv .zpwrong .rev{flex:1;min-height:0}
+
+@media (max-width:1240px) and (orientation:landscape){
+  #pv .zpgrid.res{grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+    grid-template-rows:auto minmax(0,1fr);grid-template-areas:"start tg" "hist hist"}
+}
+@media (orientation:portrait) and (max-width:1100px),(max-width:760px){
+  #pv .zpgrid,#pv .zpgrid.res{display:flex;flex-direction:column;height:auto;grid-template-areas:none}
+  #pv .zpgrid .card{min-height:200px}
+  #pv .zptop{flex-direction:column;gap:8px}
+}
+
+/* Prüfungszeile über den Lernfeldern — flach, damit das 3×2-Raster der
+   Lernecke unangetastet bleibt. Optik der .lfr-Zeilen auf dem Dashboard. */
+#pv .zprow{display:grid;grid-template-columns:34px minmax(0,1fr) auto 18px;gap:14px;align-items:center;
+  width:100%;text-align:left;margin-bottom:16px;padding:14px 16px;cursor:pointer;
+  background:var(--card);border:1px solid var(--hair);border-radius:var(--r);box-shadow:var(--sh);
+  transition:border-color .25s ease,transform .3s var(--eo),box-shadow .3s var(--eo)}
+#pv .zprow:hover{border-color:var(--blue);transform:translateY(-2px);box-shadow:0 16px 34px -22px rgba(22,43,85,.4)}
+#pv .zprow .ico{width:34px;height:34px;border-radius:10px;background:var(--f4);color:var(--blue);display:grid;place-items:center}
+#pv .zprow .zprt b{display:block;font:590 16px/1.25 var(--dom);letter-spacing:-.02em;color:var(--tx)}
+#pv .zprow .zprt small{display:block;margin-top:3px;font:400 12.5px/1.4 var(--sg);color:var(--gray)}
+#pv .zprow .zprs{text-align:right}
+#pv .zprow .zprs b{display:block;font:450 17px/1 var(--sg);color:var(--tx);font-variant-numeric:tabular-nums}
+#pv .zprow .zprs small{display:block;margin-top:3px;font:400 11.5px/1 var(--sg);color:var(--gray)}
+#pv .zprow .go{color:var(--gray2);transition:transform .3s var(--eo),color .3s}
+#pv .zprow:hover .go{color:var(--red);transform:translateX(3px)}
+#pv .lgrid{flex:1}
+@media (max-width:760px),(orientation:portrait) and (max-width:1100px){
+  #pv .zprow{grid-template-columns:34px minmax(0,1fr);gap:10px}
+  #pv .zprow .zprs,#pv .zprow .go{display:none}
+}
+
+/* Auf flachen Fenstern nimmt die Prüfungszeile den Lernfeld-Kacheln die
+   Höhe, die sie für alle fünf Zeilen brauchen. Zuerst weicht die Markenzeile
+   — sie wiederholt nur, was die Kennzahlen darunter ohnehin sagen. */
+@media (max-height:780px) and (orientation:landscape){
+  #pv .lcard .tagrow{display:none}
+  #pv .zprow{padding:10px 14px;margin-bottom:12px}
+  #pv .zprow .zprt small{margin-top:1px}
+}

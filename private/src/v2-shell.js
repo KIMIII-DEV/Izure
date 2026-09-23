@@ -39,6 +39,12 @@ function go(view){
   if(view==='dash')paintDash();
   if(view==='lern')paintLern();
   if(view==='marco'&&window.MARCOVIEW)window.MARCOVIEW.enter();
+  if(window.PRUEFUNG_UI){
+    // Verlässt man die Prüfung, muss der Zähler stehen bleiben — sonst
+    // liefe die Uhr im Hintergrund weiter und gäbe irgendwann von selbst ab,
+    // während man in der Lernecke sitzt.
+    if(view==='pruefung')window.PRUEFUNG_UI.enter();else window.PRUEFUNG_UI.leave();
+  }
   if(window.V2)window.V2.enter(view);
   if(document.body.classList.contains("priv"))window.scrollTo(0,0);
 }
@@ -158,6 +164,10 @@ $('#ytgo').addEventListener('click',function(){
 
 /* ── Lernecke-Übersicht ── */
 function paintLern(){
+  /* Die Prüfungszeile wird bei jedem Betreten neu gezeichnet: sie zeigt den
+     Stand des letzten Versuchs, und der ändert sich, ohne dass die Kacheln
+     darunter neu gebaut werden müssten. */
+  paintZP();
   if(lernPainted)return;lernPainted=true;
   var C=2*Math.PI*19;
   $('#lgrid').innerHTML=LF.map(function(l,i){
@@ -167,7 +177,7 @@ function paintLern(){
       '<span class="cd">Lernfeld '+l.code+'</span>'+
       '<h3>'+l.name+'</h3>'+
       '<span class="st">'+l.state+'</span>'+
-      '<span class="tagrow"><i>Flashcards</i><i>Quiz</i><i>Klausur</i></span>'+
+      '<span class="tagrow"><i>Flashcards</i><i>Quiz</i></span>'+
       '<span class="kpi"><div><b>'+l.themen.length+'</b>Themen</div><div><b>'+l.cards.length+'</b>Karten</div><div><b>'+l.quiz.length+'</b>Aufgaben</div></span></button>';
   }).join('')+
   '<div class="lcard soon" style="--i:'+LF.length+'"><span class="cd">Lernfeld 05—10</span><h3>Noch nicht vorhanden</h3><span class="st">wird später ergänzt</span><span class="kpi"><div><b>—</b>Themen</div><div><b>—</b>Karten</div><div><b>—</b>Aufgaben</div></span></div>';
@@ -177,6 +187,29 @@ $('#lgrid').addEventListener('click',function(e){
   var c=e.target.closest('.lcard[data-lf]');if(!c)return;
   window.openLF(+c.dataset.lf);
 });
+
+/* Zwischenprüfung als flache Zeile über den Lernfeldern. Bewusst keine
+   siebte Kachel: das Raster der Lernecke steht auf drei mal zwei, eine
+   weitere Kachel hätte es gesprengt. Und die Prüfung gehört ohnehin nicht
+   in die Reihe der Lernfelder — sie geht quer über alle. */
+function paintZP(){
+  var row=$('#zprow');
+  if(!row||!window.PRUEFUNG)return;
+  var P=window.PRUEFUNG,
+      hist=P.history(),
+      letzte=hist[hist.length-1],
+      abd=P.coverage(),
+      pool=abd[1]+abd[2]+abd[3]+abd[4];
+  row.innerHTML=
+    '<span class="ico"><svg width="16" height="16" viewBox="0 0 24 24"><use href="#i-exam"></use></svg></span>'+
+    '<span class="zprt"><b>Zwischenprüfung</b>'+
+      '<small>60 Aufgaben · 120 Minuten · vier Themengebiete · '+pool+' Aufgaben im Pool</small></span>'+
+    '<span class="zprs">'+(letzte
+      ? '<b>'+letzte.right+' / '+letzte.total+'</b><small>zuletzt · Note '+letzte.note+'</small>'
+      : '<b>—</b><small>noch nicht geschrieben</small>')+'</span>'+
+    '<span class="go"><svg width="16" height="16" viewBox="0 0 24 24"><use href="#i-arr"></use></svg></span>';
+  row.hidden=false;
+}
 
 /* ── Einstellungen ── */
 var DEF={accent:'#1E4B9A',signal:'#CD392A',surface:'light',radius:'20',density:'comfy',motion:'on'},
@@ -191,6 +224,13 @@ function apply(){
   r.setProperty('--pink',mix(cfg.signal,.9));
   r.setProperty('--r',cfg.radius+'px');
   PVROOT.dataset.surface=cfg.surface;
+  /* Auch auf <html>: die Farbtöne liegen auf #pv, aber #pv ist im Querformat
+     nur so hoch wie seine nicht-fixierten Kinder — rund hundert Pixel. Der
+     Rest der Seite bekäme also den weißen Standardhintergrund des Browsers,
+     und genau der blitzte im Dunkelmodus an den Rändern und unter dem Inhalt
+     durch. Mit dem Merker am Dokument deckt auch der Überzug beim Weiterziehen
+     (Overscroll) in der richtigen Farbe. */
+  document.documentElement.dataset.surface=cfg.surface;
   PVROOT.dataset.density=cfg.density;
   PVROOT.dataset.motion=cfg.motion;
   $$('#setwrap [data-set]').forEach(function(g){
