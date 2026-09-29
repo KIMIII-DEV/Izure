@@ -11,7 +11,7 @@
     "preview": "vite preview",
     "cf:dev": "npm run build && wrangler dev --var DEV_BYPASS:1",
     "cf:deploy": "npm run build && wrangler deploy",
-    "lern": "node scripts/build-lernfelder.mjs",
+    "lern": "node scripts/build-lernfelder.mjs && node scripts/build-pruefung.mjs",
     "test:learn": "node scripts/test-learn.mjs",
     "test:pruefung": "node scripts/test-pruefung.mjs",
     "test": "npm run test:learn && npm run test:pruefung"

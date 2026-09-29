@@ -3,3 +3,5 @@ dist
 .DS_Store
 *.log
 .wrangler
+# Arbeitsdateien lokaler Werkzeuge (z. B. Sperrdateien) gehören nicht ins Repo
+.claude/

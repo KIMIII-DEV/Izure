@@ -42,7 +42,9 @@ function start(){
   clock('--:--');
   var abd=P.coverage(),
       hist=P.history().slice().reverse(),
-      gesamt=abd[1]+abd[2]+abd[3]+abd[4];
+      gesamt=abd[1]+abd[2]+abd[3]+abd[4],
+      quote=P.quota(60),
+      saetze=P.sets?P.sets():[];
   sub('Vier Themengebiete, programmierte Aufgaben, kein Feedback während der Prüfung.');
 
   el().innerHTML=
@@ -55,6 +57,13 @@ function start(){
         return '<button class="zpf'+(i===0?' on':'')+'" type="button" data-f="'+f.id+'">'+
           '<b>'+f.t+'</b><span>'+esc(f.d)+'</span></button>';
       }).join('')+'</div>'+
+      (saetze.length
+        ? '<div class="chd" style="margin-top:14px"><h2>Originalprüfung nachschreiben</h2><span class="x">Nachbau · Originalreihenfolge</span></div>'+
+          '<div class="zpfmt zpsets" id="zpSets">'+saetze.map(function(z){
+            return '<button class="zpf" type="button" data-set="'+esc(z.id)+'">'+
+              '<b>'+esc(z.name)+'</b><span>'+z.n+' Aufgaben · '+Math.round(z.n*2)+' Minuten</span></button>';
+          }).join('')+'</div>'
+        : '')+
       '<p class="zpnote">Für <b>sehr gut</b> braucht es 92 Punkte — bei 60 Aufgaben also 56 richtige, höchstens vier Fehler. '+
         'Die Aufgaben der letzten Prüfung sind gesperrt, die der vorletzten kommen nachrangig.</p>'+
       '<div class="dbtns"><button class="btn" id="zpGo" type="button">Prüfung starten</button>'+
@@ -63,23 +72,24 @@ function start(){
     '</section>'+
 
     '<section class="card" style="--i:1">'+
-      '<div class="chd"><h2>Themengebiete</h2><span class="x">Verteilung als Annahme</span></div>'+
-      '<div class="zptg">'+P.TG.map(function(t){
+      '<div class="chd"><h2>Themengebiete</h2><span class="x">Pool je Gebiet</span></div>'+
+      '<div class="zptg" tabindex="0" role="group" aria-label="Themengebiete mit Poolgröße">'+P.TG.map(function(t){
         return '<div class="zptgr"><span class="nn">TG '+t.n+'</span>'+
           '<span><b>'+esc(t.t)+'</b><span class="mono">'+esc(t.q)+'</span></span>'+
           '<span class="zpn">'+abd[t.n]+'</span></div>';
       }).join('')+'</div>'+
-      '<p class="zpnote">Wie viele Aufgaben je Themengebiet tatsächlich gestellt werden, geht aus dem Lehrbuch nicht hervor. '+
-        'Hier wird gleichmäßig verteilt — ein Viertel je Gebiet.</p>'+
+      '<p class="zpnote">Ein Zufallsbogen mit 60 Aufgaben verteilt sich wie die fünf Originalprüfungen: '+
+        quote[1]+' / '+quote[2]+' / '+quote[3]+' / '+quote[4]+' Aufgaben in Themengebiet 1 bis 4. '+
+        'Dieselbe Wiederholer-Frage aus zwei Jahrgängen kommt nie in denselben Bogen.</p>'+
     '</section>'+
 
     '<section class="card" style="--i:2">'+
       '<div class="chd"><h2>Bisherige Versuche</h2><span class="x">'+hist.length+'</span></div>'+
       (hist.length
-        ? '<div class="zphist">'+hist.slice(0,8).map(function(r){
+        ? '<div class="zphist" tabindex="0" role="group" aria-label="Bisherige Versuche">'+hist.slice(0,8).map(function(r){
             var d=new Date(r.at);
             return '<div class="zphr"><span class="mono">'+p2(d.getDate())+'.'+p2(d.getMonth()+1)+'.</span>'+
-              '<span class="zpp">'+r.right+' / '+r.total+'</span>'+
+              '<span class="zpp">'+(r.set?esc(r.set)+' · ':'')+r.right+' / '+r.total+'</span>'+
               '<span class="zpq">'+String(r.punkte).replace('.',',')+' P</span>'+
               '<span class="zpnote'+(r.note<=2?' gut':r.note>=5?' schwach':'')+'">Note '+r.note+'</span>'+
               '<span class="mono">'+mmss(r.seconds)+'</span></div>';
@@ -91,10 +101,19 @@ function start(){
     '</div>';
 
   var fmt=FORMATE[0];
+  function waehle(b){
+    $$('#zpFmt .zpf,#zpSets .zpf').forEach(function(x){x.classList.toggle('on',x===b)});
+  }
   $('#zpFmt').addEventListener('click',function(e){
     var b=e.target.closest('[data-f]');if(!b)return;
     fmt=FORMATE.filter(function(f){return f.id===b.dataset.f})[0];
-    $$('#zpFmt .zpf').forEach(function(x){x.classList.toggle('on',x===b)});
+    waehle(b);
+  });
+  var zs=$('#zpSets');
+  if(zs)zs.addEventListener('click',function(e){
+    var b=e.target.closest('[data-set]');if(!b)return;
+    fmt={set:b.dataset.set};
+    waehle(b);
   });
   $('#zpGo').addEventListener('click',function(){begin(fmt)});
   var w=$('#zpWeiter');
@@ -110,7 +129,7 @@ function start(){
 /* ═══════════ Bogen ═══════════ */
 
 function begin(fmt){
-  run=P.build({n:fmt.n,minutes:fmt.min});
+  run=fmt.set?P.build({set:fmt.set}):P.build({n:fmt.n,minutes:fmt.min});
   idx=0;
   P.saveLive(run);
   sheet();
@@ -147,7 +166,7 @@ function hatAntwort(v){return !leer(v.answer)}
 function sheet(){
   if(!run)return start();
   var v=run.items[idx];
-  sub('Aufgabe '+(idx+1)+' von '+run.items.length+' · Themengebiet '+v.tg+' · kein Feedback bis zur Abgabe');
+  sub((run.name?run.name+' · ':'')+'Aufgabe '+(idx+1)+' von '+run.items.length+' · Themengebiet '+v.tg+' · kein Feedback bis zur Abgabe');
 
   el().innerHTML=
     '<div class="zprun">'+
@@ -277,7 +296,7 @@ function auswertung(){
     '</section>'+
 
     '<section class="card" style="--i:1">'+
-      '<div class="chd"><h2>Nach Themengebiet</h2><span class="x">je ein Viertel</span></div>'+
+      '<div class="chd"><h2>Nach Themengebiet</h2><span class="x">Anteile wie im Original</span></div>'+
       '<div class="pbars">'+tgHtml+'</div>'+
       (r.schwach.length
         ? '<div class="chd" style="margin-top:14px"><h2>Schwächste Kategorien</h2></div>'+
@@ -296,7 +315,7 @@ function auswertung(){
               '<small class="n">Deine Antwort: '+esc(IT.answerText(v,v.answer))+'</small>'+
               '<small class="y">Richtig: '+esc(IT.solutionText(v))+'</small>'+
               (v.e?'<small class="ex">'+esc(v.e)+'</small>':'')+
-              '<small class="mono">TG '+v.tg+' · '+esc(v.k||'')+(v.s?' · '+esc(v.s):'')+'</small>'+
+              '<small class="mono">TG '+v.tg+' · '+esc(v.k||'')+(v.s?' · '+esc(v.s):'')+(v.src?' · '+esc(v.src):'')+'</small>'+
               '</div></div>';
           }).join('')+'</div>'
         : '<p class="zpnote">Kein Fehler. Alle '+r.total+' Aufgaben richtig.</p>')+

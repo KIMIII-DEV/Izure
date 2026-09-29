@@ -55,6 +55,7 @@ private/src/graph-data.js   erzeugt aus graph/ — nicht von Hand ändern
 private/src/graph-core.js   Graph: Modell, Kanten, Suche
 private/src/graph-view.js   Graph: Darstellung, Detailfläche
 private/src/lern-data.js    erzeugt aus content/lernfelder/ — nicht ändern
+private/src/zp-data.js      erzeugt aus content/pruefung/ — nicht ändern
 private/src/learn.js        Lernmechanik: Auswahl, Mischung, Bewertung, Leitner
 private/src/items.js        Darstellung einer Aufgabe — alle neun Typen
 private/src/pruefung.js     Zwischenprüfung: Themengebiete, Bogen, Bewertung
@@ -67,8 +68,10 @@ private/src/v2-shell.js     Router, Dashboard, Pomodoro, Ambiance, Einstellungen
 private/src/practice.js     Themen, Flashcards, Quiz
 
 content/lernfelder/         Karten und Aufgaben als bearbeitbare Quellen
+content/pruefung/           Prüfungssätze der Zwischenprüfung (5 Nachbauten + Übungssatz)
 graph/                      Wissens-Vault als Markdown (siehe unten)
 scripts/build-lernfelder.mjs  content/lernfelder/ → private/src/lern-data.js
+scripts/build-pruefung.mjs  content/pruefung/ → private/src/zp-data.js
 scripts/build-graph.mjs     graph/ → graph/META/graph.json + graph-data.js
 scripts/test-learn.mjs      Funktionstests der Lernmechanik
 scripts/test-pruefung.mjs   Funktionstests der Zwischenprüfung
@@ -151,54 +154,77 @@ von vorn anzufangen.
 
 ## Die Zwischenprüfung
 
-Eine Prüfung über alle Lernfelder, nicht mehr eine Klausur je Feld — so wie
-die echte Zwischenprüfung auch quer liegt. Grundlage ist der Anhang „Die
-Zwischenprüfung" im Lehrbuch *Ausbildung im Dialogmarketing*.
+Eine Prüfung über alle Lernfelder, so wie die echte Zwischenprüfung auch quer
+liegt. Grundlage sind der Anhang „Die Zwischenprüfung" im Lehrbuch *Ausbildung
+im Dialogmarketing* und fünf echte Zwischenprüfungen (Frühjahr 2021, Herbst
+2022, Frühjahr 2024, Herbst 2025, Frühjahr 2026 — Herbst 2023 war mit Herbst
+2022 identisch).
 
 | Vorgabe | Wert | Quelle |
 |---|---|---|
-| Aufgabenform | programmierte Fragen | Lehrbuch |
-| Zeit | höchstens 120 Minuten | Lehrbuch |
+| Aufgabenform | programmierte Aufgaben: 1 aus 5, 2 aus 6 / 3 aus 7, offene Rechen- und Datumseingabe, Reihenfolge, Zuordnung | Originalprüfungen |
+| Zeit | 120 Minuten | Lehrbuch, Originalprüfungen |
+| Aufgabenzahl | 60 | Originalprüfungen |
 | Stoff | 1. Ausbildungsjahr, vier Themengebiete | Lehrbuch |
 | Notenschlüssel | 92 / 81 / 67 / 50 / 30 Punkte | Lehrbuch |
-| Aufgabenzahl | 60 | Probezwischenprüfungen |
-| Verteilung auf die Themengebiete | 15 / 15 / 15 / 15 | **Annahme** |
+| Verteilung auf die Themengebiete | 7 / 15 / 20 / 18 | abgeleitet aus den 300 Originalaufgaben |
 
-Die Verteilung ist der einzige offene Punkt: sie ist nirgends belegt. Im Code
-steht sie als Annahme und lässt sich über `PRUEFUNG.build({ quota })` ändern.
-Die genaue Aufschlüsselung steht laut Lehrbuch im AKA-Prüfungskatalog.
+### Der Pool
 
-| TG | Themengebiet | Kapitel | Pool |
-|---|---|---|---:|
-| 1 | Leistungsangebote im Dialogmarketing | LF2 Kap. 1–2 | 89 |
-| 2 | Kommunikationsprozesse | LF3 Kap. 1–6 · LF5 Kap. 1–8 (ohne Kap. 2) | 209 |
-| 3 | Arbeits- und Aufgabengestaltung | LF1 1.1 und Kap. 4–6 · LF4 Kap. 1–6 · LF5 Kap. 2 | 163 |
-| 4 | Wirtschafts- und Sozialkunde | LF1 1.2–1.4, Kap. 2, Kap. 3 | 94 |
+`content/pruefung/` enthält sechs Sätze, zusammen 379 Aufgaben:
 
-LF5 Kapitel 2 nennt das Buch doppelt; es zählt hier zu TG 3, weil der
-Fragenkomplex „Datenbanken, Datenschutz und Datensicherheit" es ausdrücklich
-aufführt. LF2 Kapitel 3 ist nicht prüfungsrelevant — seine Aufgaben bleiben
-im Quiz, kommen aber nicht in die Prüfung.
+| Satz | Aufgaben | TG 1/2/3/4 | Inhalt |
+|---|---:|---|---|
+| `f21.js` | 60 | 7/15/20/18 | Nachbau ZP Frühjahr 2021 |
+| `h22.js` | 60 | 6/17/20/17 | Nachbau ZP Herbst 2022 (= Herbst 2023) |
+| `f24.js` | 60 | 7/13/22/18 | Nachbau ZP Frühjahr 2024 |
+| `h25.js` | 60 | 8/11/20/21 | Nachbau ZP Herbst 2025 |
+| `f26.js` | 60 | 8/17/19/16 | Nachbau ZP Frühjahr 2026 |
+| `x6.js` | 79 | 8/24/26/21 | Izuré-Übungssatz: Buch-Hotspots, die in den Originalen fehlen |
 
-Wie sie sich verhält:
+**Nachbau heißt:** gleicher Prüfinhalt, gleiche Aufgabenart, gleiche
+Reihenfolge — aber eigener Wortlaut, eigene Zahlen, eigene Tabellen. Die
+Originalhefte sind urheberrechtlich geschützt (IHK/AkA) und liegen nicht im
+Repository. Lösungen und Erklärungen folgen dem Westermann-Fachbuch LF1–LF5;
+wo die Rechtslage neuer ist als das Buch (BetrVG-Wahlalter 16, DSB ab 20
+Personen, Anrechnung des Berufsschultags, KG-Gewinnverteilung nach MoPeG),
+steht das im Erklärtext.
 
-- **Nur gebundene Aufgaben.** Freie Texteingabe fällt heraus. Rechenaufgaben
-  werden in Auswahlform überführt; die falschen Optionen bilden typische
-  Rechenfehler ab. Lässt sich kein sauberes Quartett bilden, fällt die
-  Aufgabe heraus, statt geraten zu werden.
+Zusätzliche Felder je Aufgabe (geprüft von `build-pruefung.mjs`):
+
+| Feld | Bedeutung |
+|---|---|
+| `tg` | Themengebiet 1–4, fest vergeben |
+| `g` | Konzeptgruppe — Wiederholer aus mehreren Jahrgängen teilen sie und kommen nie in denselben Bogen |
+| `src` | Herkunft, z. B. `ZP F21/27` oder `IZ Übung/12` |
+| `x` | optionale Ausgangssituation (Tabelle, Gesetzesauszug) über der Frage |
+
+Zuordnungsaufgaben dürfen – anders als im Lernfeld-Quiz – wiederkehrende
+Gegenstücke haben (fünf Beispiele, drei Kategorien), wie in der IHK-Prüfung.
+
+### Wie sie sich verhält
+
+- **Zwei Modi.** Zufallsbogen (Vollprüfung 60/120, halbe 30/60, Kurzrunde
+  12/24) mit der Verteilung aus den Originalen — oder einen Jahrgang komplett
+  in Originalreihenfolge nachschreiben.
+- **Offene Eingabe wie im Heft.** Rechen- und Datumsaufgaben werden
+  eingetippt. Zahlen werden als Zahl verglichen: `13.025` = `13025`,
+  `24,96` = `24.96`, aber `2,496` ≠ `24,96`; Einheiten (`€`, `%`) stören nicht.
+  Ein Datum mit falschem Jahr ist falsch.
 - **Kein Feedback während der Prüfung.** Jede Aufgabe ist anspringbar und
   markierbar, eine Tempoanzeige vergleicht laufend Soll und Ist. Bei 0:00
   wird automatisch abgegeben.
 - **Ein Neuladen übersteht sie** — Antworten, Markierungen und Uhr stehen
   danach wie vorher.
 - **Rotation.** Die Aufgaben der letzten Prüfung sind gesperrt, die der
-  vorletzten nachrangig. Sechs Prüfungen hintereinander nutzen über 300
+  vorletzten nachrangig. Sechs Zufallsbögen hintereinander nutzen rund 280
   verschiedene Aufgaben.
-- **Formate.** Vollprüfung (60 / 120 min), halbe Prüfung (30 / 60),
-  Kurzrunde (12 / 24). Immer zwei Minuten je Aufgabe.
 - **Auswertung.** Punkte, Note, Ergebnis je Themengebiet, schwächste
-  Kategorien, Zeitverbrauch und jeder Fehler mit Lösung, Erklärung und
-  Fundstelle.
+  Kategorien, Zeitverbrauch und jeder Fehler mit Lösung, Erklärung,
+  Fundstelle im Buch und Herkunft.
+
+Fehlt `zp-data.js`, fällt die Prüfung auf den alten Pool aus den
+Lernfeld-Aufgaben zurück (`PRUEFUNG.pool({ source: 'lf' })`).
 
 Für „sehr gut" braucht es 92 Punkte, bei 60 Aufgaben also 56 richtige —
 höchstens vier Fehler. Gerundet wird nicht: 55 von 60 sind 91,7 Punkte und

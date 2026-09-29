@@ -8,12 +8,16 @@
    · vier Themengebiete, Inhalte des 1. Ausbildungsjahres
    · Teilnahme ist Zulassungsvoraussetzung zur Abschlussprüfung (§ 43 BBiG)
 
-   Bestätigt durch geschriebene Probezwischenprüfungen:
-   60 Aufgaben in 120 Minuten.
+   Aufgabenpool: window.ZP aus content/pruefung/ (scripts/build-pruefung.mjs)
+   — fünf nachgebaute Originalprüfungen (F21, H22, F24, H25, F26; Herbst 2023
+   war mit Herbst 2022 identisch) und der Izuré-Übungssatz. Belegt aus den
+   Originalen: 60 Aufgaben in 120 Minuten, Aufgabenarten Einfachauswahl,
+   Mehrfachauswahl (2 aus 6 / 3 aus 7), offene Rechen- und Datumseingabe,
+   Reihenfolge und Zuordnung. Die Verteilung auf die Themengebiete wird aus
+   den 300 Originalaufgaben abgeleitet (quota), nicht mehr angenommen.
 
-   Weiterhin nicht belegt und deshalb als Annahme gekennzeichnet:
-   die Verteilung auf die Themengebiete (hier gleichmäßig). Über opts.quota
-   steuerbar.                                                               */
+   Fehlt window.ZP, fällt die Prüfung auf den alten Pool aus den
+   Lernfeld-Aufgaben zurück (Rechenaufgaben dann als Auswahl).          */
 
 (function (w) {
   'use strict';
@@ -111,7 +115,8 @@
 
   /* ── Pool ─────────────────────────────────────────────────────────── */
 
-  function pool(LF) {
+  /* Alter Pool aus den Lernfeld-Aufgaben — nur noch Rückfall. */
+  function poolLF(LF) {
     var out = [];
     (LF || w.LF || []).forEach(function (lf) {
       (lf.quiz || []).forEach(function (q) {
@@ -120,16 +125,50 @@
         if (CLOSED.indexOf(q.t) === -1) return;
         var item = q;
         if (q.t === 'calc') { item = calcToMC(q); if (!item) return; }
-        out.push({ tg: t, lf: lf.code, item: item });
+        out.push({ tg: t, lf: lf.code, g: null, set: null, item: item });
       });
     });
     return out;
   }
 
-  function coverage(LF) {
-    var p = pool(LF), c = { 1: 0, 2: 0, 3: 0, 4: 0 };
-    p.forEach(function (x) { c[x.tg]++; });
+  /* Prüfungspool: jede Aufgabe trägt ihr Themengebiet (tg) und ihre
+     Konzeptgruppe (g) selbst. Offene Rechen- und Datumsaufgaben bleiben
+     offen — so stehen sie auch im Prüfungsheft. */
+  function poolZP(ZP) {
+    var out = [];
+    (ZP || w.ZP || []).forEach(function (set) {
+      (set.items || []).forEach(function (q, i) {
+        var lf = /^LF(\d)/.exec(q.s || '');
+        out.push({ tg: q.tg || themengebiet(q.s), lf: lf ? '0' + lf[1] : null,
+                   g: q.g || null, set: set.id, pos: i, item: q });
+      });
+    });
+    return out;
+  }
+
+  function hasZP(opts) {
+    var z = (opts && opts.ZP) || w.ZP;
+    return !!(z && z.length) && !(opts && opts.source === 'lf');
+  }
+
+  function pool(opts) {
+    /* Alte Signatur pool(LF-Array) bleibt gültig. */
+    if (Array.isArray(opts)) return poolLF(opts);
+    opts = opts || {};
+    return hasZP(opts) ? poolZP(opts.ZP) : poolLF(opts.LF);
+  }
+
+  function coverage(opts) {
+    var p = pool(opts), c = { 1: 0, 2: 0, 3: 0, 4: 0 };
+    p.forEach(function (x) { if (c[x.tg] !== undefined) c[x.tg]++; });
     return c;
+  }
+
+  /* Die Jahrgänge für die Auswahl „Originalprüfung nachschreiben“. */
+  function sets(ZP) {
+    return (ZP || w.ZP || []).map(function (s) {
+      return { id: s.id, name: s.name, note: s.note, n: s.items.length };
+    });
   }
 
   /* ── Zustand ──────────────────────────────────────────────────────── */
@@ -168,65 +207,114 @@
     return a;
   }
 
-  /* Verteilung auf die Themengebiete. Gleichverteilung als Vorgabe —
-     die tatsächliche Gewichtung geht aus dem Buch nicht hervor. */
-  function quota(n) {
-    var base = Math.floor(n / 4), rest = n - base * 4, q = [base, base, base, base];
-    for (var i = 0; i < rest; i++) q[i]++;
-    return { 1: q[0], 2: q[1], 3: q[2], 4: q[3] };
+  /* Verteilung auf die Themengebiete — abgeleitet aus den Original-
+     prüfungen im Pool (alle Aufgaben mit src „ZP …“), per Hare-Niemeyer
+     auf n Plätze gerundet. Bei 300 Originalaufgaben (36/73/101/90) ergibt
+     das für 60 Aufgaben 7/15/20/18. Ohne Originale: Gleichverteilung. */
+  function weights(ZP) {
+    var c = { 1: 0, 2: 0, 3: 0, 4: 0 }, any = 0;
+    (ZP || w.ZP || []).forEach(function (s) {
+      (s.items || []).forEach(function (q) {
+        if (/^ZP /.test(q.src || '') && c[q.tg] !== undefined) { c[q.tg]++; any++; }
+      });
+    });
+    return any ? c : { 1: 1, 2: 1, 3: 1, 4: 1 };
+  }
+
+  function quota(n, ZP) {
+    var wt = weights(ZP), sum = wt[1] + wt[2] + wt[3] + wt[4], q = {}, rest = [], used = 0;
+    [1, 2, 3, 4].forEach(function (t) {
+      var exact = n * wt[t] / sum;
+      q[t] = Math.floor(exact); used += q[t];
+      rest.push({ t: t, r: exact - q[t] });
+    });
+    rest.sort(function (a, b) { return b.r - a.r || a.t - b.t; });
+    for (var i = 0; used < n; i++, used++) q[rest[i % 4].t]++;
+    return q;
   }
 
   /* Rotation: Aufgaben der letzten Prüfung werden gesperrt, die der
-     vorletzten nur nachrangig gezogen. Bei 89 bis 209 Aufgaben je
-     Themengebiet und 15 Plätzen reicht der Pool dafür mühelos. */
+     vorletzten nur nachrangig gezogen. Der kleinste Topf (TG 1, rund 44
+     Aufgaben) trägt bei 7 Plätzen je Bogen gut fünf Bögen ohne Wiederholung. */
   /* Stabiler Schlüssel je Aufgabe. Lückentexte tragen in q nur einen
      Kurztitel, deshalb gehört der Lückentext selbst mit hinein. */
   function keyOf(item) {
     return (item.t || 'mc') + '|' + (item.q || '') + '|' + (item.txt || '');
   }
 
-  function draw(cands, n, blocked, stale) {
+  /* Zieht n Aufgaben: erst frische, dann die der vorletzten Runde, zuletzt
+     die der letzten. Innerhalb eines Bogens kommt jede Konzeptgruppe (g)
+     höchstens einmal vor — sonst stünde dieselbe Wiederholer-Frage aus zwei
+     Jahrgängen im selben Bogen. Reicht der Pool dafür nicht, wird die
+     Gruppensperre als Letztes gelockert. */
+  function draw(cands, n, blocked, stale, groups) {
     var fresh = [], old = [], used = [];
     cands.forEach(function (x) {
       var id = keyOf(x.item);
       if (blocked[id]) { used.push(x); return; }
       (stale[id] ? old : fresh).push(x);
     });
-    var take = shuffle(fresh).slice(0, n);
-    if (take.length < n) take = take.concat(shuffle(old).slice(0, n - take.length));
-    if (take.length < n) take = take.concat(shuffle(used).slice(0, n - take.length));
+    var take = [];
+    function fill(list, strict) {
+      for (var i = 0; i < list.length && take.length < n; i++) {
+        var x = list[i];
+        if (take.indexOf(x) > -1) continue;
+        if (strict && x.g && groups[x.g]) continue;
+        take.push(x); if (x.g) groups[x.g] = 1;
+      }
+    }
+    fresh = shuffle(fresh); old = shuffle(old); used = shuffle(used);
+    fill(fresh, true); fill(old, true); fill(used, true);
+    fill(fresh, false); fill(old, false); fill(used, false);
     return take;
   }
 
+  function view(x, i) {
+    var v = w.LEARN ? w.LEARN.present(x.item) : x.item;
+    v.tg = x.tg; v.lf = x.lf; v.nr = i + 1; v.key = keyOf(x.item);
+    v.spent = 0; v.answer = null; v.marked = false;
+    return v;
+  }
+
+  /* opts: n, minutes, quota, set (Jahrgang, z. B. 'F21'), source ('lf'),
+     ZP / LF (Daten für Tests). */
   function build(opts) {
     opts = opts || {};
+
+    /* Originalprüfung nachschreiben: ganzer Satz in Originalreihenfolge,
+       ohne Rotation. Zeit: 2 Minuten je Aufgabe wie im Original. */
+    if (opts.set) {
+      var z = (opts.ZP || w.ZP || []).filter(function (s) { return s.id === opts.set; })[0];
+      if (!z) throw new Error('Unbekannter Prüfungssatz: ' + opts.set);
+      var ps = poolZP([z]);
+      return {
+        started: Date.now(), set: z.id, name: z.name,
+        minutes: opts.minutes || Math.round(ps.length * MINUTES / COUNT),
+        items: ps.map(view)
+      };
+    }
+
     var n = opts.n || COUNT;
-    var LFs = opts.LF || w.LF;
-    var p = pool(LFs);
+    var p = pool(opts);
     var runs = history();
-    var blocked = {}, stale = {};
+    var blocked = {}, stale = {}, groups = {};
     (runs[runs.length - 1] || { ids: [] }).ids.forEach(function (i) { blocked[i] = 1; });
     (runs[runs.length - 2] || { ids: [] }).ids.forEach(function (i) { stale[i] = 1; });
 
-    var q = opts.quota || quota(n), sheet = [];
+    var q = opts.quota || (hasZP(opts) ? quota(n, opts.ZP)
+                                       : quota(n, [{ items: [] }]));
+    var sheet = [];
     [1, 2, 3, 4].forEach(function (t) {
       var c = p.filter(function (x) { return x.tg === t; });
-      draw(c, q[t], blocked, stale).forEach(function (x) { sheet.push(x); });
+      /* Wie im Prüfungsheft: Themengebiet 1 bis 4 nacheinander, innerhalb
+         des Gebiets gemischt. */
+      draw(c, q[t], blocked, stale, groups).forEach(function (x) { sheet.push(x); });
     });
-
-    /* Themengebiete durchmischen, damit nicht 15 WiSo-Fragen am Stück
-       kommen — das entspricht auch dem Aufbau echter Prüfungsbögen. */
-    sheet = shuffle(sheet);
 
     return {
       started: Date.now(),
       minutes: opts.minutes || MINUTES,
-      items: sheet.map(function (x, i) {
-        var v = w.LEARN ? w.LEARN.present(x.item) : x.item;
-        v.tg = x.tg; v.lf = x.lf; v.nr = i + 1; v.key = keyOf(x.item);
-        v.spent = 0; v.answer = null; v.marked = false;
-        return v;
-      })
+      items: sheet.map(view)
     };
   }
 
@@ -305,7 +393,7 @@
     var db = load();
     db.runs = (db.runs || []).concat([{
       at: Date.now(), punkte: punkte, note: note.note, right: right, total: n,
-      seconds: used,
+      seconds: used, set: run.set || null,
       ids: run.items.map(function (v) { return v.key; })
     }]).slice(-12);
     save(db);
@@ -317,7 +405,7 @@
   w.PRUEFUNG = {
     TG: TG, SCALE: SCALE, MINUTES: MINUTES, COUNT: COUNT,
     themengebiet: themengebiet,
-    pool: pool, coverage: coverage,
+    pool: pool, coverage: coverage, quota: quota, sets: sets,
     build: build, grade: grade, noteFor: noteFor, needed: needed,
     history: history, reset: reset,
     saveLive: saveLive, loadLive: loadLive, clearLive: clearLive, keyOf: keyOf

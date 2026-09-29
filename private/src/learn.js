@@ -122,6 +122,10 @@ window.LEARN = (function () {
   function present(item) {
     var v = { id: idOf(item), t: item.t || 'mc', k: item.k, d: item.d,
               s: item.s, e: item.e, q: item.q };
+    /* Aufgaben aus dem Prüfungspool (content/pruefung) bringen eine
+       Ausgangssituation (x) und ihre Herkunft (src) mit. */
+    if (item.x) v.x = item.x;
+    if (item.src) { v.src = item.src; v.zp = true; }
 
     if (v.t === 'mc' || v.t === 'odd') {
       var pairs = item.a.map(function (txt, n) { return { txt: txt, ok: n === item.c }; });
@@ -161,7 +165,11 @@ window.LEARN = (function () {
 
     } else if (v.t === 'match') {
       v.left = item.pairs.map(function (p) { return p[0]; });
-      v.right = shuffle(item.pairs.map(function (p) { return p[1]; }));
+      /* Wie in der IHK-Prüfung dürfen mehrere Zeilen dasselbe Gegenstück
+         haben (z. B. zwei Lerntypen „auditiv“) — im Auswahlfeld steht es
+         trotzdem nur einmal. */
+      v.right = shuffle(item.pairs.map(function (p) { return p[1]; })
+        .filter(function (r, n, all) { return all.indexOf(r) === n; }));
       v.sol = item.pairs.map(function (p) { return p[1]; });
     }
     return v;
@@ -221,6 +229,33 @@ window.LEARN = (function () {
       .replace(/\s+/g, ' ');
   }
 
+  /* Deutsche Zahlenschreibweise lesen: „13.025“ = 13025, „80,5“ = 80,5,
+     „54.000,00“ = 54000. Gibt NaN zurück, wenn der Text keine saubere Zahl
+     ist — dann wird nicht numerisch verglichen. Ein Datum wie 13.10.2026
+     ist keine Zahl und fällt damit heraus. */
+  function numDE(s) {
+    /* Eine angehängte Einheit stört nicht — auch nicht, wenn sie aus mehreren
+       Wörtern besteht („24,96 MAK“, „8 %“, „12 Anrufe/Stunde“, „1,49
+       Mitarbeiter je Seat“, „40-fach“). Die Einheit steht neben dem Feld, und
+       wer sie mit abtippt, soll dafür nicht falsch gewertet werden. Enthält
+       der Rest hinter der Zahl aber selbst Ziffern („3 Std. 20 Min.“), ist es
+       keine Einheit, sondern mehr als eine Zahl — dann wird als Text
+       verglichen, sonst gälte „3 Std. 45 Min.“ als dasselbe. */
+    var raw = String(s == null ? '' : s).trim(),
+        m = /^(-?[\d.,\s]*\d)\s*(?:[-\/]?\s*[A-Za-zÄÖÜäöüß%€][^\d]*)?$/.exec(raw);
+    var t = (m ? m[1] : raw).replace(/\s+/g, '');
+    if (!/^-?[\d.,]+$/.test(t)) return NaN;
+    if (t.indexOf(',') > -1) {
+      if (!/^-?(\d{1,3}(\.\d{3})+|\d+),\d+$/.test(t)) return NaN;
+      t = t.replace(/\./g, '').replace(',', '.');
+    } else if (/^-?\d{1,3}(\.\d{3})+$/.test(t)) {
+      t = t.replace(/\./g, '');
+    } else if (!/^-?\d+(\.\d+)?$/.test(t)) {
+      return NaN;
+    }
+    return parseFloat(t);
+  }
+
   function grade(view, answer) {
     var t = view.t, i;
 
@@ -242,14 +277,15 @@ window.LEARN = (function () {
     }
 
     if (t === 'type' || t === 'calc') {
-      var a = norm(answer);
+      var a = norm(answer), y = numDE(answer);
       var hit = view.ans.some(function (acc) {
-        var na = norm(acc);
-        if (na === a) return true;
-        /* Zahlen tolerant: 6,7 == 6.7 == 6.70 */
-        var x = parseFloat(String(acc).replace(',', '.')),
-            y = parseFloat(String(answer).replace(',', '.'));
-        return !isNaN(x) && !isNaN(y) && Math.abs(x - y) < 0.051;
+        var x = numDE(acc);
+        /* Zahlen werden als Zahl verglichen, nicht als Text: 6,7 == 6.7 ==
+           6,70 und 13.025 == 13025 — aber 2,496 ist nicht 24,96, auch wenn
+           beide ohne Trennzeichen gleich aussehen. */
+        if (!isNaN(x) && !isNaN(y)) return Math.abs(x - y) < 0.051;
+        if (!isNaN(x) && t === 'calc') return false;
+        return norm(acc) === a;
       });
       return { ok: hit };
     }
@@ -339,6 +375,7 @@ window.LEARN = (function () {
     MASTER_HITS: MASTER_HITS,
     buildSession: buildSession,
     present: present,
+    numDE: numDE,
     grade: grade,
     record: record,
     endSession: endSession,

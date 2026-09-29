@@ -399,3 +399,40 @@ html[data-surface="dark"]{background:#0B0B0C}
   #pv .zprow{padding:10px 14px;margin-bottom:12px}
   #pv .zprow .zprt small{margin-top:1px}
 }
+
+/* Ausgangssituation einer Prüfungsaufgabe (content/pruefung, Feld x):
+   Tabellen und Gesetzesauszüge als abgesetzter Kasten über der Frage.
+   Zeilenumbrüche aus den Daten bleiben erhalten. */
+#pv .qz .qinfo{white-space:pre-line;font:400 13.5px/1.55 var(--sg);color:var(--tx);background:var(--f4);border:1px solid var(--hair);border-radius:10px;padding:10px 12px;margin:0 0 12px;text-wrap:pretty}
+
+/* Startkarte der Zwischenprüfung: Formate und Jahrgänge als Raster.
+   Mit den sechs Jahrgängen untereinander wuchs die Karte auf rund 860 Pixel
+   Inhalt — bei 750 Pixel Kartenhöhe und `overflow:hidden` lagen Hinweis und
+   „Prüfung starten“ unsichtbar darunter, auf jeder Desktopgröße. Nebeneinander
+   brauchen dieselben neun Kacheln ein gutes Drittel der Höhe. Rollen darf die
+   Karte trotzdem: der Startknopf darf nie wieder unerreichbar sein, egal wie
+   viele Jahrgänge noch dazukommen. */
+#pv .zpstart{overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--e4) transparent}
+#pv .zpstart .zpfmt{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+#pv .zpstart .zpf{padding:10px 12px}
+#pv .zpstart .zpf b{font-size:14px}
+#pv .zpstart .zpf span{font-size:12px}
+#pv .zpstart .dbtns{margin-top:auto;padding-top:12px}
+@media (max-width:760px),(orientation:portrait) and (max-width:1100px){
+  #pv .zpstart .zpfmt{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+
+/* `hidden` heißt verborgen — immer. Jede Regel, die ein `display` setzt,
+   überstimmt sonst das Attribut: auf der Startseite der Prüfung stand
+   „Restzeit --:--“ (.pomchip setzt display:flex), und über der Lernecke lag
+   ein leerer, aber fokussierbarer Knopf (.zprow setzt display:grid), bevor
+   die Zeile befüllt war. Eine Regel für alle, statt jede Stelle einzeln zu
+   flicken. */
+#pv [hidden]{display:none!important}
+
+/* Aufgeklappte Erklärung: Platz für die langen Erklärtexte der
+   Prüfungsaufgaben (Rechenweg mit Probe, Hinweise zum Rechtsstand — bis gut
+   500 Zeichen). Mit 200 Pixeln wären sie auf schmalen Bildschirmen
+   abgeschnitten worden. Eine feste Obergrenze bleibt, weil `max-height:none`
+   sich nicht animieren lässt. */
+#pv .expl.show{max-height:640px}

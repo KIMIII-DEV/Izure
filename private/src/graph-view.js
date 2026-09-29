@@ -108,7 +108,10 @@ function render(anim){
     '<text class="mc-fname" x="'+fx+'" y="'+(fy+coreR*2.1+22).toFixed(0)+'">'+esc(cut(f.name,nameChars))+'</text>'+
     '<text class="mc-fmeta" x="'+fx+'" y="'+(fy+coreR*2.1+40).toFixed(0)+'">'+esc(cut(f.type+' · '+prov(f.id).l,nameChars*1.2))+'</text></g>';
 
-  box.innerHTML='<svg role="img" aria-label="Wissensgraph rund um '+esc(f.name)+'">'+
+  /* role="group", nicht "img": ein Bild ist für Screenreader eine
+     geschlossene Einheit, die Knoten darin wären als Knöpfe nicht
+     erreichbar. */
+  box.innerHTML='<svg role="group" aria-label="Wissensgraph rund um '+esc(f.name)+'">'+
     '<g class="l-edge">'+edges.join('')+'</g>'+core+cards.join('')+nodes.join('')+
     (fs.length?'':'<text class="mc-empty" x="'+Math.round(w/2)+'" y="'+Math.round(h/2)+'">Keine Beziehungen im aktiven Filter</text>')+
     '</svg>';

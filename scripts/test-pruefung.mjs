@@ -11,7 +11,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const rel = (p) => path.join(ROOT, p);
 const store={}; global.localStorage={getItem:k=>store[k]??null,setItem:(k,v)=>{store[k]=v},removeItem:k=>{delete store[k]}};
 global.window=global;
-for (const f of ['private/src/lern-data.js','private/src/learn.js','private/src/pruefung.js'])
+for (const f of ['private/src/lern-data.js','private/src/zp-data.js','private/src/learn.js','private/src/pruefung.js'])
   new Function(fs.readFileSync(rel(f),'utf8')).call(global);
 const P=window.PRUEFUNG, L=window.LEARN; let fail=0;
 const ok=(c,m)=>{console.log((c?'  ✓ ':'  ✗ ')+m); if(!c)fail++;};
@@ -25,26 +25,33 @@ ok(P.themengebiet('LF1 1.1.2')===3 && P.themengebiet('LF1 5.3')===3,'LF1 1.1 und
 ok(P.themengebiet('LF1 1.3.1')===4 && P.themengebiet('LF1 2.3.1')===4 && P.themengebiet('LF1 3.2')===4,'LF1 1.2–1.4, 2, 3 → TG4');
 ok(P.themengebiet('LF4 6')===3,'LF4 → TG3');
 
-console.log('\n2 — Pool');
+console.log('\n2 — Pool aus den Prüfungssätzen');
 const cov=P.coverage(); console.log('    Abdeckung je TG:',JSON.stringify(cov));
-ok([1,2,3,4].every(t=>cov[t]>=60),'jedes Themengebiet trägt mindestens 4 Vollprüfungen ohne Wiederholung');
 const pool=P.pool();
-ok(pool.every(x=>x.item.t!=='type'),'keine freie Texteingabe (programmierte Fragen)');
-ok(pool.every(x=>x.item.t!=='calc'),'Rechenaufgaben liegen als Auswahl vor');
-const calcs=pool.filter(x=>x.item._calc);
-ok(calcs.length>=25,`${calcs.length} Rechenaufgaben umgewandelt`);
-ok(calcs.every(x=>new Set(x.item.a).size===4 && x.item.a.length===4),'jede Rechenaufgabe hat 4 verschiedene Optionen');
-ok(calcs.every(x=>{const r=x.item.a[x.item.c];return x.item.a.filter(a=>a===r).length===1}),'Lösung kommt genau einmal vor');
+ok(pool.length>=360,`${pool.length} Aufgaben im Pool (Ziel: mindestens 6 × 60)`);
+ok(P.sets().filter(z=>z.id!=='X6').every(z=>z.n===60),'fünf Originalsätze mit je 60 Aufgaben');
+ok([1,2,3,4].every(t=>cov[t]>=40),'jedes Themengebiet hat mindestens 40 Aufgaben');
+ok(pool.some(x=>x.item.t==='calc') && !pool.some(x=>x.item._calc),'Rechenaufgaben bleiben offen (Eingabe wie im Prüfungsheft)');
+ok(pool.every(x=>x.item.src && x.g && [1,2,3,4].includes(x.tg)),'jede Aufgabe trägt Herkunft, Konzeptgruppe und Themengebiet');
+const lfPool=P.pool({source:'lf'});
+ok(lfPool.length>0 && lfPool.every(x=>x.item.t!=='calc'),'Rückfall auf Lernfeld-Pool bleibt lauffähig (Rechnen als Auswahl)');
 
 console.log('\n3 — Zusammenstellung');
+const Q=P.quota(60);
+ok(Q[1]+Q[2]+Q[3]+Q[4]===60,'Quote ergibt 60: '+JSON.stringify(Q));
+ok(Q[1]===7&&Q[2]===15&&Q[3]===20&&Q[4]===18,'Quote wie in den 300 Originalaufgaben (7/15/20/18)');
 const run=P.build();
 ok(run.items.length===60,'60 Aufgaben');
 ok(run.minutes===120,'120 Minuten');
 const q={1:0,2:0,3:0,4:0}; run.items.forEach(v=>q[v.tg]++);
-ok([1,2,3,4].every(t=>q[t]===15),'15 je Themengebiet: '+JSON.stringify(q));
+ok([1,2,3,4].every(t=>q[t]===Q[t]),'Themengebiete wie die Quote: '+JSON.stringify(q));
 ok(new Set(run.items.map(v=>v.key)).size===60,'keine Dublette im Bogen');
-let blocks=0,cur=1; for(let i=1;i<60;i++){ if(run.items[i].tg===run.items[i-1].tg){cur++;blocks=Math.max(blocks,cur)} else cur=1 }
-ok(blocks<=6,'Themengebiete durchmischt (längster Block: '+blocks+')');
+const gOf=new Map(ZP.flatMap(z=>z.items).map(it=>[P.keyOf(it),it.g]));
+ok(new Set(run.items.map(v=>gOf.get(v.key))).size===60,'jede Konzeptgruppe höchstens einmal im Bogen');
+ok(run.items.every((v,i)=>i===0||run.items[i-1].tg<=v.tg),'Reihenfolge wie im Prüfungsheft: TG 1 bis 4');
+const f21=P.build({set:'F21'});
+ok(f21.items.length===60 && f21.minutes===120 && f21.items[0].src==='ZP F21/1' && f21.items[59].src==='ZP F21/60','Jahrgang F21: ganzer Satz in Originalreihenfolge');
+ok(f21.items.some(v=>v.x),'Ausgangssituationen (x) kommen in der Ansicht an');
 
 console.log('\n4 — Bewertung nach IHK-Schlüssel');
 const note=p=>P.noteFor(p).t;
@@ -57,7 +64,7 @@ ok(P.needed(1,60)===56,'sehr gut braucht 56 von 60');
 ok(P.noteFor(55*100/60).t==='gut','Grenzfall: 55/60 = 91,7 Punkte → gut, nicht gerundet');
 
 console.log('\n5 — Vollständige Runde bewerten');
-const right=v=>({mc:v.c,odd:v.c,tf:v.v,multi:v.cs,cloze:v.gaps?.map(g=>g.s),order:v.items,match:v.sol})[v.t];
+const right=v=>({mc:v.c,odd:v.c,tf:v.v,multi:v.cs,cloze:v.gaps?.map(g=>g.s),order:v.items,match:v.sol,calc:v.ans?.[0],type:v.ans?.[0]})[v.t];
 run.items.forEach((v,i)=>{v.answer=i<56?right(v):null});
 const r=P.grade(run);
 ok(r.right===56,'56 richtig erkannt');
@@ -69,11 +76,23 @@ const ids1=new Set(run.items.map(v=>v.key));
 const run2=P.build();
 const ov=run2.items.filter(v=>ids1.has(v.key)).length;
 ok(ov===0,'nächste Prüfung überschneidet sich nicht mit der letzten ('+ov+')');
-let sum=0; const all=new Set(); for(let k=0;k<6;k++){const x=P.build(); x.items.forEach(v=>v.answer=null); P.grade(x); x.items.forEach(v=>all.add(v.key));}
+const all=new Set(); for(let k=0;k<6;k++){const x=P.build(); x.items.forEach(v=>v.answer=null); P.grade(x); x.items.forEach(v=>all.add(v.key));}
 ok(all.size>=250,`6 Prüfungen nacheinander nutzen ${all.size} verschiedene Aufgaben`);
+
+console.log('\n6b — Zahlen- und Datumseingabe');
+const gd=(ans,a,t='calc')=>LEARN.grade({t,ans},a).ok;
+ok(gd(['13.025','13025'],'13.025')&&gd(['13.025','13025'],'13025 Mailings'),'Tausenderpunkt und Einheit werden toleriert');
+ok(gd(['24,96'],'24.96')&&!gd(['24,96'],'2,496'),'24,96 == 24.96, aber 2,496 zählt nicht');
+ok(gd(['54.000','54000','54.000,00'],'54.000,00 €'),'Betrag mit Cent und Eurozeichen');
+ok(gd(['13.10.2026','13.10.26'],'13.10.2026','type')&&!gd(['13.10.2026','13.10.26'],'13.10.2025','type'),'Datum: falsches Jahr ist falsch');
+ok(gd(['1,49'],'1,49 Mitarbeiter je Seat')&&gd(['12'],'12 Anrufe/Stunde')&&gd(['40'],'40-fach'),'mehrteilige Einheit hinter der Zahl wird toleriert');
+ok(!gd(['3 Std. 20 Min.'],'3 Std. 45 Min.','type')&&gd(['3 Std. 20 Min.'],'3 std 20 min','type'),'Zahl mit weiteren Zahlen dahinter ist keine Einheit — Textvergleich');
+const dup=ZP.flatMap(z=>z.items).find(it=>it.t==='match'&&new Set(it.pairs.map(p=>p[1])).size<it.pairs.length);
+if(dup){const v=LEARN.present(dup); ok(new Set(v.right).size===v.right.length && LEARN.grade(v,v.sol).ok,'Zuordnung mit wiederkehrender Kategorie: Auswahl ohne Doppel, Lösung bewertbar');}
 
 console.log('\n7 — Kurzformate');
 const k=P.build({n:12,minutes:24}); const kq={1:0,2:0,3:0,4:0}; k.items.forEach(v=>kq[v.tg]++);
-ok(k.items.length===12 && [1,2,3,4].every(t=>kq[t]===3),'Kurzrunde: 3 je Themengebiet');
+const KQ=P.quota(12);
+ok(k.items.length===12 && [1,2,3,4].every(t=>kq[t]===KQ[t]),'Kurzrunde: Verteilung '+JSON.stringify(kq));
 
 console.log(fail?`\n${fail} fehlgeschlagen`:'\nAlle Tests bestanden.'); process.exit(fail?1:0);

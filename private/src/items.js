@@ -13,7 +13,7 @@
 window.ITEMS=(function(){
 'use strict';
 
-var K=['A','B','C','D','E','F'];
+var K=['A','B','C','D','E','F','G','H'];
 
 var TYPE_LABEL={
   mc:'Einfachauswahl', multi:'Mehrfachauswahl', tf:'Wahr oder falsch',
@@ -27,6 +27,12 @@ function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'
    gemischt, Lösungsindex mitgeführt. Der Renderer weiss nichts über die
    richtige Antwort ausser dem, was für die Anzeige nötig ist. */
 function body(it){
+  /* Ausgangssituation der Prüfungsaufgaben (Tabelle, Gesetzesauszug,
+     Screenshot-Beschreibung) steht wie im Prüfungsheft über der Frage. */
+  return (it.x?'<p class="qinfo">'+esc(it.x)+'</p>':'')+bodyCore(it);
+}
+
+function bodyCore(it){
   var t=it.t;
 
   if(t==='mc'||t==='odd'){
@@ -39,7 +45,9 @@ function body(it){
 
   if(t==='multi'){
     return '<p class="q">'+esc(it.q)+'</p>'+
-      '<p class="qsub">Mehrere Antworten sind richtig.</p><div class="opts">'+
+      '<p class="qsub">'+(it.zp&&it.cs
+        ? 'Kreuzen Sie genau '+(['','eine','zwei','drei','vier','fünf'][it.cs.length]||it.cs.length)+' Antworten an.'
+        : 'Mehrere Antworten sind richtig.')+'</p><div class="opts">'+
       it.a.map(function(a,n){
         return '<button class="opt box" type="button" data-n="'+n+'" aria-pressed="false" style="--d:'+n+'">'+
           '<span class="k">'+K[n]+'</span><span class="ot">'+esc(a)+'</span></button>';
