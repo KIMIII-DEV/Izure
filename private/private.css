@@ -436,3 +436,24 @@ html[data-surface="dark"]{background:#0B0B0C}
    abgeschnitten worden. Eine feste Obergrenze bleibt, weil `max-height:none`
    sich nicht animieren lässt. */
 #pv .expl.show{max-height:640px}
+
+/* Zwischenprüfung · Auflösung direkt nach dem Prüfen.
+   Derselbe Erklärkasten wie im Quiz, dazu oben das Urteil und — bei
+   Rechenaufgaben — der Rechenweg in voller Textfarbe statt im gedämpften
+   Grau: er ist hier der eigentliche Inhalt, nicht eine Randnotiz. */
+#pv .expl.zpx{border-left:3px solid var(--hair)}
+#pv .expl.zpx.ok{border-left-color:#199E3B}
+#pv .expl.zpx.no{border-left-color:var(--red)}
+#pv .expl.zpx .zv{display:block;margin-bottom:6px;font:500 14.5px/1.45 var(--sg);color:var(--tx)}
+#pv .expl.zpx.ok .zv{color:#147F30}
+#pv .expl.zpx.no .zv{color:var(--red-tx,var(--red))}
+#pv[data-surface="dark"] .expl.zpx.ok .zv{color:#5FD37D}
+#pv .expl.zpx .zyou{display:block;margin:-2px 0 8px;font:400 13px/1.45 var(--sg);color:var(--gray)}
+#pv .expl.zpx b{margin-top:2px}
+#pv .expl.zpx .zwhy{display:block;font:400 13.5px/1.6 var(--sg);color:var(--tx);text-wrap:pretty}
+
+/* Aufgabenpunkte zeigen das Ergebnis — der aktuelle Punkt bleibt blau. */
+#pv .exd.ok:not(.now){border-color:#199E3B;color:#147F30;background:color-mix(in srgb,#199E3B 10%,transparent)}
+#pv .exd.no:not(.now){border-color:var(--red);color:var(--red-tx,var(--red));background:color-mix(in srgb,var(--red) 9%,transparent)}
+#pv[data-surface="dark"] .exd.ok:not(.now){color:#5FD37D}
+#pv #zpItem .qzfoot{flex-wrap:wrap}

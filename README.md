@@ -211,9 +211,14 @@ Gegenstücke haben (fünf Beispiele, drei Kategorien), wie in der IHK-Prüfung.
   eingetippt. Zahlen werden als Zahl verglichen: `13.025` = `13025`,
   `24,96` = `24.96`, aber `2,496` ≠ `24,96`; Einheiten (`€`, `%`) stören nicht.
   Ein Datum mit falschem Jahr ist falsch.
-- **Kein Feedback während der Prüfung.** Jede Aufgabe ist anspringbar und
-  markierbar, eine Tempoanzeige vergleicht laufend Soll und Ist. Bei 0:00
-  wird automatisch abgegeben.
+- **Auflösung direkt nach jeder Antwort.** Mit „Prüfen" (oder Enter im
+  Eingabefeld) steht sofort da, ob die Antwort stimmt, was richtig ist und
+  warum — bei Rechenaufgaben der Rechenweg mit Probe und die eigene Eingabe
+  daneben. Danach ist die Aufgabe gesperrt: ließe sie sich nach dem Blick
+  auf die Lösung noch ändern, wäre das Ergebnis am Ende nichts wert. Die
+  Aufgabenpunkte oben färben sich grün oder rot. Jede Aufgabe bleibt
+  anspringbar und markierbar, eine Tempoanzeige vergleicht Soll und Ist,
+  bei 0:00 wird automatisch abgegeben.
 - **Ein Neuladen übersteht sie** — Antworten, Markierungen und Uhr stehen
   danach wie vorher.
 - **Rotation.** Die Aufgaben der letzten Prüfung sind gesperrt, die der

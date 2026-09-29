@@ -255,7 +255,7 @@ function markBody(root,it,res,given){
     if(inp){
       inp.disabled=true;
       inp.classList.add(res.ok?'gok':'gno');
-      if(!res.ok)q('.typerow').insertAdjacentHTML('beforeend','<span class="gfix">'+esc(it.ans[0])+'</span>');
+      if(!res.ok)q('.typerow').insertAdjacentHTML('beforeend','<span class="gfix">'+esc(it.ans[0])+(it.unit?' '+esc(it.unit):'')+'</span>');
     }
 
   }else if(t==='order'){

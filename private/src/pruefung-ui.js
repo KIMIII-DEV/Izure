@@ -5,7 +5,13 @@
 
    Drei Zustände in derselben Fläche: Startseite, laufender Bogen,
    Auswertung. Ein laufender Bogen übersteht ein Neuladen — er liegt im
-   localStorage, mitsamt Antworten, Markierungen und Startzeitpunkt. */
+   localStorage, mitsamt Antworten, Markierungen, Auflösungen und
+   Startzeitpunkt.
+
+   Jede Antwort wird direkt nach dem Prüfen aufgelöst: richtig oder falsch,
+   die richtige Lösung und die Begründung — bei Rechenaufgaben mit dem
+   Rechenweg. Danach ist die Aufgabe gesperrt. Ließe sie sich nach dem Blick
+   auf die Lösung noch ändern, wäre das Ergebnis am Ende nichts wert. */
 window.PRUEFUNG_UI=(function(){
 'use strict';
 
@@ -45,7 +51,7 @@ function start(){
       gesamt=abd[1]+abd[2]+abd[3]+abd[4],
       quote=P.quota(60),
       saetze=P.sets?P.sets():[];
-  sub('Vier Themengebiete, programmierte Aufgaben, kein Feedback während der Prüfung.');
+  sub('Vier Themengebiete, programmierte Aufgaben, Auflösung direkt nach jeder Antwort.');
 
   el().innerHTML=
     '<div class="zpgrid">'+
@@ -166,23 +172,22 @@ function hatAntwort(v){return !leer(v.answer)}
 function sheet(){
   if(!run)return start();
   var v=run.items[idx];
-  sub((run.name?run.name+' · ':'')+'Aufgabe '+(idx+1)+' von '+run.items.length+' · Themengebiet '+v.tg+' · kein Feedback bis zur Abgabe');
+  sub((run.name?run.name+' · ':'')+'Aufgabe '+(idx+1)+' von '+run.items.length+' · Themengebiet '+v.tg+' · Auflösung direkt nach dem Prüfen');
 
   el().innerHTML=
     '<div class="zprun">'+
       '<div class="zptop">'+
-        '<div class="exdots" id="zpDots">'+run.items.map(function(x,n){
-          return '<button class="exd'+(n===idx?' now':'')+(hatAntwort(x)?' set':'')+(x.marked?' mark':'')+
-            '" type="button" data-q="'+n+'" aria-label="Aufgabe '+(n+1)+(x.marked?', markiert':'')+'">'+(n+1)+'</button>';
-        }).join('')+'</div>'+
+        '<div class="exdots" id="zpDots">'+run.items.map(function(x,n){return dot(x,n)}).join('')+'</div>'+
         '<span class="mono" id="zpTempo"></span>'+
       '</div>'+
       '<div class="qz scry" id="zpItem">'+
         IT.tagRow(v,'TG '+v.tg)+
         IT.body(v)+
+        '<div class="expl zpx" id="zpExpl" aria-live="polite"></div>'+
         '<div class="qzfoot">'+
           '<button class="btn ghost sm" id="zpPrev" type="button"'+(idx===0?' disabled':'')+'>Zurück</button>'+
-          '<button class="btn sm" id="zpNext" type="button">'+(idx===run.items.length-1?'Abgeben':'Weiter')+'</button>'+
+          '<button class="btn sm" id="zpCheck" type="button" disabled>Prüfen</button>'+
+          '<button class="btn ghost sm" id="zpNext" type="button">'+(idx===run.items.length-1?'Abgeben':'Weiter')+'</button>'+
           '<button class="pill'+(v.marked?' on':'')+'" id="zpMark" type="button" aria-pressed="'+(!!v.marked)+'">Markieren</button>'+
           '<span class="mono" id="zpState"></span>'+
         '</div>'+
@@ -190,17 +195,30 @@ function sheet(){
     '</div>';
 
   zaehler();
-  IT.wire($('#zpItem'),v,function(val){
+  var check=$('#zpCheck');
+  IT.wire($('#zpItem'),v,function(val,complete){
+    // Nach der Auflösung zählt keine Änderung mehr.
+    if(v.checked)return;
     /* Leere Eingaben als `null` ablegen, nicht als `[]` oder `undefined`.
        Die Bewertung zählt genau die `null`-Einträge als unbeantwortet — ein
        leeres Feld sähe sonst aus wie eine abgegebene Antwort und würde als
        falsch gewertet statt als offen. */
     v.answer=leer(val)?null:val;
+    check.disabled=!complete||!hatAntwort(v);
     P.saveLive(runMitStand());
     var d=$$('#zpDots .exd')[idx];
     if(d)d.classList.toggle('set',hatAntwort(v));
     zaehler();
   },v.answer);
+
+  // Schon aufgelöst (Zurückspringen, Neuladen): gleich so zeigen.
+  if(v.checked)aufloesen(v,false);
+
+  check.addEventListener('click',function(){pruefe(v)});
+  // Eingabefelder: Enter prüft, wie bei jedem Formular.
+  $('#zpItem').addEventListener('keydown',function(e){
+    if(e.key==='Enter'&&e.target.matches('input')&&!check.disabled){e.preventDefault();pruefe(v)}
+  });
 
   $$('#zpDots .exd').forEach(function(d){
     d.addEventListener('click',function(){idx=+d.dataset.q;P.saveLive(runMitStand());sheet()});
@@ -224,13 +242,67 @@ function sheet(){
   timer=setInterval(tick,1000);
 }
 
+function dot(x,n){
+  var cls='exd'+(n===idx?' now':'')+(hatAntwort(x)?' set':'')+(x.marked?' mark':'')+
+          (x.checked?(x.ok?' ok':' no'):'');
+  var lbl='Aufgabe '+(n+1)+(x.checked?(x.ok?', richtig':', falsch'):'')+(x.marked?', markiert':'');
+  return '<button class="'+cls+'" type="button" data-q="'+n+'" aria-label="'+lbl+'">'+(n+1)+'</button>';
+}
+
+/* Antwort prüfen und festschreiben. Bewertet wird mit derselben Funktion
+   wie am Ende (LEARN.grade) — die Auflösung hier und die Punkte in der
+   Auswertung können also nicht auseinanderlaufen. */
+function pruefe(v){
+  if(v.checked||!hatAntwort(v))return;
+  v.checked=true;
+  v.ok=window.LEARN.grade(v,v.answer).ok;
+  P.saveLive(runMitStand());
+  aufloesen(v,true);
+}
+
+function aufloesen(v,frisch){
+  var root=$('#zpItem');
+  // Die Detailauswertung (welche Lücke, welche Zeile) wird neu berechnet
+  // statt gespeichert — sie ergibt sich eindeutig aus Antwort und Aufgabe.
+  var res=window.LEARN.grade(v,v.answer);
+  IT.markBody(root,v,res,v.answer);
+
+  var box=$('#zpExpl');
+  box.className='expl zpx show '+(v.ok?'ok':'no');
+  box.innerHTML=
+    '<span class="zv">'+(v.ok
+      ? 'Richtig.'
+      : 'Falsch. Richtig ist: '+esc(IT.solutionText(v)))+'</span>'+
+    (!v.ok&&(v.t==='calc'||v.t==='type')
+      ? '<span class="zyou">Deine Eingabe: '+esc(IT.answerText(v,v.answer))+(v.unit?' '+esc(v.unit):'')+'</span>'
+      : '')+
+    (v.e?'<b>'+(v.t==='calc'?'Rechenweg':'Warum')+'</b><span class="zwhy">'+esc(v.e)+'</span>':'')+
+    (v.s||v.src?'<em class="srcref">'+esc([v.s,v.src].filter(Boolean).join(' · '))+'</em>':'');
+
+  var check=$('#zpCheck'),next=$('#zpNext');
+  if(check)check.hidden=true;
+  if(next){next.classList.remove('ghost')}
+  var d=$$('#zpDots .exd')[idx];
+  if(d){d.classList.add(v.ok?'ok':'no');d.setAttribute('aria-label','Aufgabe '+(idx+1)+(v.ok?', richtig':', falsch')+(v.marked?', markiert':''))}
+  zaehler();
+
+  if(frisch){
+    if(next)next.focus({preventScroll:true});
+    // Auf kleinen Bildschirmen liegt die Auflösung unter dem Rand.
+    setTimeout(function(){box.scrollIntoView({block:'nearest',behavior:'smooth'})},120);
+  }
+}
+
 function runMitStand(){run.at=idx;return run}
 
 function zaehler(){
   var e=$('#zpState');if(!e)return;
   var b=run.items.filter(hatAntwort).length,
-      m=run.items.filter(function(x){return x.marked}).length;
-  e.textContent=b+' / '+run.items.length+' beantwortet'+(m?' · '+m+' markiert':'');
+      m=run.items.filter(function(x){return x.marked}).length,
+      g=run.items.filter(function(x){return x.checked}),
+      r=g.filter(function(x){return x.ok}).length;
+  e.textContent=b+' / '+run.items.length+' beantwortet'+
+    (g.length?' · '+r+' von '+g.length+' richtig':'')+(m?' · '+m+' markiert':'');
 }
 
 function abgeben(automatisch){
