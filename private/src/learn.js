@@ -121,7 +121,7 @@ window.LEARN = (function () {
 
   function present(item) {
     var v = { id: idOf(item), t: item.t || 'mc', k: item.k, d: item.d,
-              s: item.s, e: item.e, q: item.q };
+              s: item.s, e: item.e, q: item.q, m: item.m };
     /* Aufgaben aus dem Prüfungspool (content/pruefung) bringen eine
        Ausgangssituation (x) und ihre Herkunft (src) mit. */
     if (item.x) v.x = item.x;

@@ -136,6 +136,20 @@ function render(){
 }
 
 /* ─────────── Flashcards ─────────── */
+/* Längere Kartentexte (v. a. auf schmalen Bildschirmen) sollen die Karte
+   vergrößern statt in einem Mini-Scrollbereich zu verschwinden. */
+function fitDeck(){
+  var d=$('.deck');if(!d)return;
+  d.style.minHeight='';
+  var need=0;
+  $$('.fcf,.fcb',d).forEach(function(f){
+    var q=f.querySelector('p');if(!q)return;
+    need=Math.max(need,f.clientHeight+(q.scrollHeight-q.clientHeight));
+  });
+  if(need>d.clientHeight)d.style.minHeight=Math.ceil(need)+'px';
+}
+window.addEventListener('resize',function(){fitDeck()});
+
 function cards(){
   var p=$('#practice');
   if(fi>=order.length)return cardsDone();
@@ -163,6 +177,7 @@ function cards(){
     '<span class="mono">'+known.length+' gewusst · '+again.length+' offen</span>'+
   '</div>';
   pcto($('#pb'),pct);
+  fitDeck();
   var fc=$('#fc');
   function flip(){flipped=!flipped;fc.classList.toggle('flip',flipped);$('#rate').classList.toggle('show',flipped)}
   fc.addEventListener('click',flip);

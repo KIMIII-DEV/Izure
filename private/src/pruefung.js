@@ -92,9 +92,16 @@
     var dec = /[.,]/.test(item.ans[0]) ? (item.ans[0].split(/[.,]/)[1] || '').length : 0;
     if (dec > 2) dec = 2;
 
-    var cand = [v * 10, v / 10, v * 2, v / 2, 100 - v, v * 1.5];
     var seen = {}, out = [];
     seen[fmt(v, dec)] = 1;
+    // Autorenseitige Distraktoren (typische Rechenfehler) haben Vorrang.
+    if (Array.isArray(item.o)) {
+      item.o.forEach(function (x) {
+        var s = String(x).trim();
+        if (out.length < 3 && s && !seen[s] && s !== String(item.ans[0]).trim()) { seen[s] = 1; out.push(s); }
+      });
+    }
+    var cand = [v * 10, v / 10, v * 2, v / 2, 100 - v, v * 1.5];
     for (var i = 0; i < cand.length && out.length < 3; i++) {
       var c = cand[i];
       if (!isFinite(c) || c <= 0) continue;

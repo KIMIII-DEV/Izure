@@ -69,7 +69,8 @@ function focusCell(id){
    sonst steht dort weiter „05—10“, obwohl Lernfeld 5 existiert. */
 function nextRange(){
   var last=LF.length?parseInt(LF[LF.length-1].code,10):0;
-  return last>=10?'':(last+1<10?'0':'')+(last+1)+'—10';
+  if(last>=10)return '';
+  return last===9?'10':(last+1<10?'0':'')+(last+1)+'—10';
 }
 var lernPainted=false;
 
@@ -180,7 +181,7 @@ function paintLern(){
       '<span class="tagrow"><i>Flashcards</i><i>Quiz</i></span>'+
       '<span class="kpi"><div><b>'+l.themen.length+'</b>Themen</div><div><b>'+l.cards.length+'</b>Karten</div><div><b>'+l.quiz.length+'</b>Aufgaben</div></span></button>';
   }).join('')+
-  '<div class="lcard soon" style="--i:'+LF.length+'"><span class="cd">Lernfeld 05—10</span><h3>Noch nicht vorhanden</h3><span class="st">wird später ergänzt</span><span class="kpi"><div><b>—</b>Themen</div><div><b>—</b>Karten</div><div><b>—</b>Aufgaben</div></span></div>';
+  (nextRange()?'<div class="lcard soon" style="--i:'+LF.length+'"><span class="cd">Lernfeld '+nextRange()+'</span><h3>Noch nicht vorhanden</h3><span class="st">wird später ergänzt</span><span class="kpi"><div><b>—</b>Themen</div><div><b>—</b>Karten</div><div><b>—</b>Aufgaben</div></span></div>':'');
   setTimeout(function(){$$('#lgrid .fgc').forEach(function(c){c.setAttribute('stroke-dashoffset',c.dataset.off)})},420);
 }
 $('#lgrid').addEventListener('click',function(e){

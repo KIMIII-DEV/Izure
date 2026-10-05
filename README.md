@@ -109,7 +109,7 @@ Details und das Feldschema stehen in [`graph/README.md`](graph/README.md).
 
 ## Inhalte der Lernecke
 
-**5 Lernfelder, 108 Themen, 250 Flashcards, 606 Aufgaben** (Kaufleute für
+**9 Lernfelder (LF1–LF9), 232 Themen, 450 Flashcards, 2.076 Aufgaben** (Kaufleute für
 Dialogmarketing). Bearbeitet wird in [`content/lernfelder/`](content/lernfelder/README.md),
 gebaut mit `npm run lern`.
 
@@ -119,7 +119,10 @@ Neun Aufgabentypen statt nur Einfachauswahl: `mc`, `multi`, `tf`, `cloze`
 Zuordnungsfragen mussten früher als Flashcards mitlaufen, weil das Quiz sie
 nicht darstellen konnte — dafür gibt es jetzt eigene Typen. Das ist der
 Grund, warum die Kartenzahl von 528 auf 250 gesunken und die Aufgabenzahl
-von 299 auf 606 gestiegen ist: derselbe Stoff, in der passenden Form.
+von 299 auf 606 gestiegen ist: derselbe Stoff, in der passenden Form. LF1–LF3
+sind seither überarbeitet, LF6–LF9 neu hinzugekommen (je 267–282 Aufgaben mit
+14 Lernmethoden, 50 Karten). Die Zwischenprüfung umfasst weiterhin LF1–LF5;
+für LF6–LF9 liefert `themengebiet()` bewusst `null`.
 
 ### Warum man sich hier nichts auswendig merken kann
 
@@ -185,7 +188,7 @@ im Dialogmarketing* und fünf echte Zwischenprüfungen (Frühjahr 2021, Herbst
 **Nachbau heißt:** gleicher Prüfinhalt, gleiche Aufgabenart, gleiche
 Reihenfolge — aber eigener Wortlaut, eigene Zahlen, eigene Tabellen. Die
 Originalhefte sind urheberrechtlich geschützt (IHK/AkA) und liegen nicht im
-Repository. Lösungen und Erklärungen folgen dem Westermann-Fachbuch LF1–LF5;
+Repository. Lösungen und Erklärungen folgen dem Westermann-Fachbuch LF1–LF9;
 wo die Rechtslage neuer ist als das Buch (BetrVG-Wahlalter 16, DSB ab 20
 Personen, Anrechnung des Berufsschultags, KG-Gewinnverteilung nach MoPeG),
 steht das im Erklärtext.

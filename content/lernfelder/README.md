@@ -6,7 +6,7 @@ jedem Build überschrieben — Änderungen darin sind beim nächsten
 `npm run build` weg.
 
 ```
-c1.js … c5.js   Karten und Aufgaben je Lernfeld
+c1.js … c9.js   Karten und Aufgaben je Lernfeld (LF4/5 mit je 107/117 Aufgaben)
 themen.js       Themen des Lernen-Tabs + amtliche Lernfeldnamen
 ```
 
@@ -35,7 +35,10 @@ Lernfelder hinweg.
 ## Aufbau einer Aufgabe
 
 Gemeinsame Felder: `t` (Typ), `q` (Frage), `e` (Erklärung, Pflicht),
-`k` (Kategorie, Pflicht), `d` (`easy` | `medium` | `hard`), `s` (Fundstelle).
+`k` (Kategorie, Pflicht), `d` (`easy` | `medium` | `hard`), `s` (Fundstelle),
+`m` (optional: Lernmethode, z. B. „Fehler finden“ — erscheint dezent über der
+Frage), bei `calc` zusätzlich `o:[3 Strings]` (typische Falschergebnisse; sie
+dienen in der Zwischenprüfung als Antwortoptionen).
 
 | Typ | Zusätzlich | Bedeutung |
 |---|---|---|

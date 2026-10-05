@@ -311,6 +311,7 @@ function solutionText(it){
 function tagRow(it,right){
   return '<span class="qtags"><i>'+esc(TYPE_LABEL[it.t]||it.t)+'</i>'+
     (it.k?'<i class="alt">'+esc(it.k)+'</i>':'')+
+    (it.m?'<i class="mth" title="Lernmethode">'+esc(it.m)+'</i>':'')+
     (right?'<span class="mono sc">'+esc(right)+'</span>':'')+'</span>';
 }
 

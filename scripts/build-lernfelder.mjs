@@ -1,10 +1,10 @@
 /* scripts/build-lernfelder.mjs
 
-   Fügt die fünf Inhaltspakete aus content/lernfelder/ zu private/src/lern-data.js
+   Fügt die neun Inhaltspakete aus content/lernfelder/ zu private/src/lern-data.js
    zusammen und prüft sie gegen das Schema. Aufruf: npm run lern
 
    Inhalte werden NIE in der erzeugten Datei geändert — die wird bei jedem
-   Build überschrieben. Geändert wird in c1.js bis c5.js (Karten, Aufgaben)
+   Build überschrieben. Geändert wird in c1.js bis c9.js (Karten, Aufgaben)
    beziehungsweise themen.js (Themen, Lernfeldnamen). */
 
 import fs from 'node:fs';
@@ -31,7 +31,7 @@ const themenOf = (code) => (META[code] || {}).themen || [];
 const nameOf = (code, fallback) => (META[code] || {}).name || fallback || '';
 
 const packs = [];
-for (const f of ['c1', 'c2', 'c3', 'c4', 'c5']) packs.push(await load(f + '.js'));
+for (const f of ['c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7', 'c8', 'c9']) packs.push(await load(f + '.js'));
 
 
 /* ── Validierung ── */
@@ -113,7 +113,7 @@ const LF = packs.map(p => ({
 
 const header =
 `/* Erzeugt von scripts/build-lernfelder.mjs — nicht von Hand ändern.
-   Quelle: content/lernfelder/c1.js–c5.js (Karten, Aufgaben)
+   Quelle: content/lernfelder/c1.js–c9.js (Karten, Aufgaben)
            content/lernfelder/themen.js  (Themen, Lernfeldnamen)
    Neu bauen mit: npm run lern
 
